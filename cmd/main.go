@@ -9,11 +9,16 @@ import (
 
 func main() {
 	fmt.Println("initializing client...")
-	_, err := c.NewClient()
+	client, err := c.NewClient()
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("unable to initialize client. Exiting")
 		os.Exit(1)
+	}
+
+	fmt.Println("authenticating with Simplenote...")
+	if err := client.Authenticate(); err != nil {
+		fmt.Println(err)
 	}
 
 	fmt.Println("done.")

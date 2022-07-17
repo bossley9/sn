@@ -5,7 +5,9 @@ import (
 	"os"
 )
 
-type Cache struct{}
+type Cache struct {
+	AuthToken string `json:"token"`
+}
 
 func getCacheFile() string {
 	cacheDir := os.Getenv("XDG_CACHE_HOME")
