@@ -12,8 +12,8 @@ type AuthorizeResponse struct {
 }
 
 // https://simperium.com/docs/reference/http/#auth
-func Authorize(appID string, apiKey string, username string, password string) (string, error) {
-	url := "https://auth.simperium.com/1/" + appID + "/authorize/"
+func (client *Client) Authorize(username string, password string) (string, error) {
+	url := "https://auth.simperium.com/1/" + client.appID + "/authorize/"
 
 	params := map[string]any{
 		"username": username,
@@ -21,7 +21,7 @@ func Authorize(appID string, apiKey string, username string, password string) (s
 	}
 
 	headers := map[string]string{
-		"X-Simperium-API-Key": apiKey,
+		"X-Simperium-API-Key": client.apiKey,
 	}
 
 	authRes, err := fetch(url, "POST", params, headers)

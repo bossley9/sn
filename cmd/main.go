@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"log"
 
 	c "git.sr.ht/~bossley9/sn/pkg/client"
 )
@@ -12,12 +12,31 @@ func main() {
 	client, err := c.NewClient()
 	if err != nil {
 		fmt.Println(err)
-		fmt.Println("unable to initialize client. Exiting")
-		os.Exit(1)
+		log.Fatal("unable to initialize client. Exiting.")
 	}
 
-	fmt.Println("authenticating with Simplenote...")
+	fmt.Println("authenticating with server...")
 	if err := client.Authenticate(); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to authenticate. Exiting.")
+	}
+
+	fmt.Println("connecting to socket...")
+	if err := client.Connect(); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to connect to socket. Exiting.")
+	}
+
+	defer client.Disconnect()
+
+	fmt.Println("opening notes bucket...")
+	if err := client.OpenBucket("note"); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to open bucket. Exiting.")
+	}
+
+	fmt.Println("syncing client...")
+	if err := client.Sync(); err != nil {
 		fmt.Println(err)
 	}
 

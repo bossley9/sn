@@ -5,6 +5,7 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/gorilla/websocket"
 	"golang.org/x/term"
 
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
@@ -12,7 +13,9 @@ import (
 
 type client struct {
 	projectDir string
+	connection *websocket.Conn
 	cache      *Cache
+	simp       *s.Client
 }
 
 func NewClient() (*client, error) {
@@ -36,11 +39,16 @@ func NewClient() (*client, error) {
 	}
 	c.cache = cache
 
+	fmt.Println("\tcreating simperium client...")
+	c.simp = s.NewClient(APP_ID, API_KEY, "1.1", "node", "node-simperium", "0.0.1")
+
 	return &c, nil
 }
 
+// retrieve user authentication token
 func (client *client) Authenticate() error {
 	if len(client.cache.AuthToken) > 0 {
+		fmt.Println("\tfound cached token.")
 		return nil
 	}
 
@@ -55,7 +63,8 @@ func (client *client) Authenticate() error {
 	}
 	fmt.Println()
 
-	token, err := s.Authorize(APP_ID, API_KEY, username, string(password))
+	fmt.Println("\tfetching authorization...")
+	token, err := client.simp.Authorize(username, string(password))
 	if err != nil {
 		return err
 	}
@@ -63,6 +72,53 @@ func (client *client) Authenticate() error {
 	client.cache.AuthToken = token
 
 	if err := WriteCache(client.cache); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// connect to the server websocket
+func (client *client) Connect() error {
+	if err := client.simp.ConnectToSocket(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// disconnect from the server websocket
+func (client *client) Disconnect() error {
+	if err := client.simp.DisconnectSocket(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// authorize access to a given bucket
+func (client *client) OpenBucket(bucketName string) error {
+	if err := client.simp.WriteInitMsg(0, client.cache.AuthToken, bucketName); err != nil {
+		return err
+	}
+
+	if _, err := client.simp.ReadMsg(); err != nil {
+		return err
+	}
+	if _, err := client.simp.ReadMsg(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// sync client with bucket
+func (client *client) Sync() error {
+	// first sync
+	if err := client.simp.WriteIndexMsg(0, false, "", "", 10); err != nil {
+		return err
+	}
+
+	_, err := client.simp.ReadMsg()
+	if err != nil {
 		return err
 	}
 
