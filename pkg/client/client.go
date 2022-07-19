@@ -96,29 +96,14 @@ func (client *client) Disconnect() error {
 
 // authorize access to a given bucket
 func (client *client) OpenBucket(bucketName string) error {
-	if err := client.simp.WriteInitMsg(0, client.cache.AuthToken, bucketName); err != nil {
+	if err := client.simp.WriteInitMessage(0, client.cache.AuthToken, bucketName); err != nil {
 		return err
 	}
 
-	if _, err := client.simp.ReadMsg(); err != nil {
+	if _, err := client.simp.ReadMessage(); err != nil {
 		return err
 	}
-	if _, err := client.simp.ReadMsg(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// sync client with bucket
-func (client *client) Sync() error {
-	// first sync
-	if err := client.simp.WriteIndexMsg(0, false, "", "", 10); err != nil {
-		return err
-	}
-
-	_, err := client.simp.ReadMsg()
-	if err != nil {
+	if _, err := client.simp.ReadMessage(); err != nil {
 		return err
 	}
 

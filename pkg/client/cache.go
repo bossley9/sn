@@ -6,7 +6,8 @@ import (
 )
 
 type Cache struct {
-	AuthToken string `json:"token"`
+	AuthToken      string `json:"token"`
+	CurrentVersion string `json:"current_version"`
 }
 
 func getCacheFile() string {

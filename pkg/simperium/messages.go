@@ -34,7 +34,7 @@ func readMessage(conn *websocket.Conn, debug bool) (int, string, error) {
 	return mtype, message, nil
 }
 
-func (client *Client) ReadMsg() (string, error) {
+func (client *Client) ReadMessage() (string, error) {
 	_, message, err := readMessage(client.connection, true)
 	if err != nil {
 		return "", err
@@ -52,7 +52,7 @@ type InitMessage struct {
 	Version    string `json:"version"`
 }
 
-func (client *Client) WriteInitMsg(channel int, token string, bucketName string) error {
+func (client *Client) WriteInitMessage(channel int, token string, bucketName string) error {
 	messageJson := InitMessage{
 		ClientID:   client.clientID,
 		API:        client.apiVersion,
@@ -77,7 +77,18 @@ func (client *Client) WriteInitMsg(channel int, token string, bucketName string)
 	return nil
 }
 
-func (client *Client) WriteIndexMsg(channel int, returnData bool, offset string, mark string, limit int) error {
+type IndexMessageResponse struct {
+	CurrentVersion string          `json:"current"`
+	Entities       []EntitySummary `json:"index"`
+	Mark           string          `json:"mark"`
+}
+
+type EntitySummary struct {
+	ID      string `json:"id"`
+	Version int    `json:"v"`
+}
+
+func (client *Client) WriteIndexMessage(channel int, returnData bool, offset string, mark string, limit int) error {
 	message := strconv.Itoa(channel) + ":i:"
 
 	if returnData {
