@@ -20,6 +20,10 @@ type Note struct {
 	CreationDate   float32  `json:"creationDate"`
 }
 
+type NoteDiff struct {
+	Content struct{} `json:"content"`
+}
+
 func (note *Note) getFormattedTitle() string {
 	line := strings.Split(note.Content, "\n")[0]
 	trimmedLine := strings.TrimSpace(strings.TrimPrefix(line, "#"))
@@ -27,11 +31,30 @@ func (note *Note) getFormattedTitle() string {
 	return strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
 }
 
-func (client *client) writeNote(note *Note) error {
+func (client *client) getFileName(note *Note) string {
 	root := client.projectDir
 	title := note.getFormattedTitle()
-	filename := root + "/" + title + "-" + note.ID + ".gmi"
+	return root + "/" + title + "-" + note.ID + ".gmi"
+}
 
+func (client *client) getFileNameFromID(noteID string) (string, error) {
+	files, err := os.ReadDir(client.projectDir)
+	if err != nil {
+		return "", err
+	}
+
+	for _, file := range files {
+		filename := file.Name()
+		if strings.Contains(filename, noteID) {
+			return filename, nil
+		}
+	}
+
+	return "", nil
+}
+
+func (client *client) writeNote(note *Note) error {
+	filename := client.getFileName(note)
 	if err := os.WriteFile(filename, []byte(note.Content), 0600); err != nil {
 		return err
 	}

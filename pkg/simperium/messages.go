@@ -125,6 +125,27 @@ func (client *Client) WriteEntityMessage(channel int, entityID string, entityVer
 	if err := writeMessage(client.connection, websocket.TextMessage, message, true); err != nil {
 		return err
 	}
+	return nil
+}
 
+type ChangeVersionResponse[T any] []Change[T]
+
+type Change[T any] struct {
+	ClientID      string    `json:"clientid"`
+	ChangeVersion string    `json:"cv"`
+	EndVersion    int       `json:"ev"`
+	SourceVersion int       `json:"sv"`
+	EntityID      string    `json:"id"`
+	Operation     string    `json:"o"`
+	Values        T         `json:"v"`
+	ChangeIDs     []string  `json:"ccids"`
+	Data          *struct{} `json:"d,omitempty"`
+}
+
+func (client *Client) WriteChangeVersionMessage(channel int, changeVersion string) error {
+	message := strconv.Itoa(channel) + ":cv:" + changeVersion
+	if err := writeMessage(client.connection, websocket.TextMessage, message, true); err != nil {
+		return err
+	}
 	return nil
 }
