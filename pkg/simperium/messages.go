@@ -106,8 +106,22 @@ func (client *Client) WriteIndexMessage(channel int, returnData bool, offset str
 	}
 	message = message + ":"
 
-	message = message + strconv.Itoa(limit)
+	// limit is 0-indexed
+	message = message + strconv.Itoa(limit-1)
 
+	if err := writeMessage(client.connection, websocket.TextMessage, message, true); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type EntityRes[T any] struct {
+	Data T `json:"data"`
+}
+
+func (client *Client) WriteEntityMessage(channel int, entityID string, entityVersion int) error {
+	message := strconv.Itoa(channel) + ":e:" + entityID + "." + strconv.Itoa(entityVersion)
 	if err := writeMessage(client.connection, websocket.TextMessage, message, true); err != nil {
 		return err
 	}
