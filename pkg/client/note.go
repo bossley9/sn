@@ -3,6 +3,8 @@ package client
 import (
 	"os"
 	"strings"
+
+	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 )
 
 type Note struct {
@@ -21,7 +23,7 @@ type Note struct {
 }
 
 type NoteDiff struct {
-	Content struct{} `json:"content"`
+	Content j.StringJSONDiff `json:"content"`
 }
 
 func (note *Note) getFormattedTitle() string {
@@ -46,7 +48,7 @@ func (client *client) getFileNameFromID(noteID string) (string, error) {
 	for _, file := range files {
 		filename := file.Name()
 		if strings.Contains(filename, noteID) {
-			return filename, nil
+			return client.projectDir + "/" + filename, nil
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -118,11 +119,27 @@ func (client *client) updateSync() error {
 		filename, err := client.getFileNameFromID(change.EntityID)
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println("\t\tunable to apply change to entity " + change.EntityID + ". Skipping...")
+			fmt.Println("\t\tunable to retrieve file for entity " + change.EntityID + ". Skipping...")
 			continue
 		}
+		content, err := os.ReadFile(filename)
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println("\t\tunable to read file " + filename + ". Skipping...")
+			continue
+		}
+
 		fmt.Println("\tapplying change " + change.ChangeVersion + " to " + filename + "...")
-		// TODO
+		diff := change.Values.Content
+
+		result := diff.Apply(string(content))
+
+		if err := os.WriteFile(filename, []byte(result), 0600); err != nil {
+			fmt.Println(err)
+			fmt.Println("\t\tunable to update file " + filename + ". Skipping...")
+			continue
+		}
+
 	}
 
 	return nil
