@@ -6,8 +6,9 @@ import (
 )
 
 type Cache struct {
-	AuthToken      string `json:"token"`
-	CurrentVersion string `json:"current_version"`
+	AuthToken      string         `json:"token"`
+	CurrentVersion string         `json:"current_version"`
+	Notes          map[string]int `json:"notes"`
 }
 
 func getCacheFile() string {
@@ -34,10 +35,10 @@ func ReadCache() (*Cache, error) {
 	return &cache, nil
 }
 
-func WriteCache(cache *Cache) error {
+func (client *client) writeCache() error {
 	cacheFile := getCacheFile()
 
-	cacheContent, err := json.Marshal(cache)
+	cacheContent, err := json.Marshal(client.cache)
 	if err != nil {
 		return err
 	}
@@ -46,4 +47,19 @@ func WriteCache(cache *Cache) error {
 	}
 
 	return nil
+}
+
+func (client *client) setCurrentVersion(version string) error {
+	client.cache.CurrentVersion = version
+	return client.writeCache()
+}
+
+func (client *client) saveNote(entityID string, version int) error {
+	if client.cache.Notes == nil {
+		client.cache.Notes = make(map[string]int)
+	}
+
+	client.cache.Notes[entityID] = version
+
+	return client.writeCache()
 }

@@ -8,34 +8,30 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// TODO remove debug
-func writeMessage(conn *websocket.Conn, messageType int, message string, debug bool) error {
+func writeMessage(conn *websocket.Conn, messageType int, message string) error {
 	if err := conn.WriteMessage(messageType, []byte(message)); err != nil {
 		return err
 	}
-	if debug {
-		fmt.Println("w " + message)
-	}
+	// TODO remove debug
+	fmt.Println("w " + message)
 
 	return nil
 }
 
-// TODO remove debug
-func readMessage(conn *websocket.Conn, debug bool) (int, string, error) {
+func readMessage(conn *websocket.Conn) (int, string, error) {
 	mtype, raw, err := conn.ReadMessage()
 	if err != nil {
 		return 0, "", err
 	}
 	message := string(raw)
-	if debug {
-		fmt.Println("r " + message)
-	}
+	// TODO remove debug
+	fmt.Println("r " + message)
 
 	return mtype, message, nil
 }
 
 func (client *Client) ReadMessage() (string, error) {
-	_, message, err := readMessage(client.connection, true)
+	_, message, err := readMessage(client.connection)
 	if err != nil {
 		return "", err
 	}
@@ -70,22 +66,23 @@ func (client *Client) WriteInitMessage(channel int, token string, bucketName str
 
 	message := strconv.Itoa(channel) + ":init:" + string(messageBytes)
 
-	if err := writeMessage(client.connection, websocket.TextMessage, message, true); err != nil {
+	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-type IndexMessageResponse struct {
-	CurrentVersion string          `json:"current"`
-	Entities       []EntitySummary `json:"index"`
-	Mark           string          `json:"mark"`
+type IndexMessageResponse[T any] struct {
+	CurrentVersion string             `json:"current"`
+	Entities       []EntitySummary[T] `json:"index"`
+	Mark           string             `json:"mark"`
 }
 
-type EntitySummary struct {
+type EntitySummary[T any] struct {
 	ID      string `json:"id"`
 	Version int    `json:"v"`
+	Data    T      `json:"d,omitempty"`
 }
 
 func (client *Client) WriteIndexMessage(channel int, returnData bool, offset string, mark string, limit int) error {
@@ -109,7 +106,7 @@ func (client *Client) WriteIndexMessage(channel int, returnData bool, offset str
 	// limit is 0-indexed
 	message = message + strconv.Itoa(limit-1)
 
-	if err := writeMessage(client.connection, websocket.TextMessage, message, true); err != nil {
+	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
 		return err
 	}
 
@@ -122,7 +119,7 @@ type EntityRes[T any] struct {
 
 func (client *Client) WriteEntityMessage(channel int, entityID string, entityVersion int) error {
 	message := strconv.Itoa(channel) + ":e:" + entityID + "." + strconv.Itoa(entityVersion)
-	if err := writeMessage(client.connection, websocket.TextMessage, message, true); err != nil {
+	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
 		return err
 	}
 	return nil
@@ -144,7 +141,7 @@ type Change[T any] struct {
 
 func (client *Client) WriteChangeVersionMessage(channel int, changeVersion string) error {
 	message := strconv.Itoa(channel) + ":cv:" + changeVersion
-	if err := writeMessage(client.connection, websocket.TextMessage, message, true); err != nil {
+	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
 		return err
 	}
 	return nil

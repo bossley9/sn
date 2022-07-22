@@ -13,9 +13,9 @@ import (
 
 type client struct {
 	projectDir string
-	connection *websocket.Conn
 	cache      *Cache
 	simp       *s.Client
+	connection *websocket.Conn
 }
 
 func NewClient() (*client, error) {
@@ -71,7 +71,7 @@ func (client *client) Authenticate() error {
 
 	client.cache.AuthToken = token
 
-	if err := WriteCache(client.cache); err != nil {
+	if err := client.writeCache(); err != nil {
 		return err
 	}
 

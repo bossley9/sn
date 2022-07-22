@@ -5,13 +5,10 @@ import (
 	"strings"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
+	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
 type Note struct {
-	// returned from index command
-	ID      string `json:"id"`
-	Version int    `json:"version"`
-	// returned from entity command
 	Tags           []string `json:"tags"`
 	Deleted        bool     `json:"deleted"`
 	ShareURL       string   `json:"shareURL"`
@@ -26,17 +23,17 @@ type NoteDiff struct {
 	Content j.StringJSONDiff `json:"content"`
 }
 
-func (note *Note) getFormattedTitle() string {
-	line := strings.Split(note.Content, "\n")[0]
+func getFormattedTitle(summary *s.EntitySummary[Note]) string {
+	line := strings.Split(summary.Data.Content, "\n")[0]
 	trimmedLine := strings.TrimSpace(strings.TrimPrefix(line, "#"))
 
 	return strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
 }
 
-func (client *client) getFileName(note *Note) string {
+func (client *client) getFileName(summary *s.EntitySummary[Note]) string {
 	root := client.projectDir
-	title := note.getFormattedTitle()
-	return root + "/" + title + "-" + note.ID + ".gmi"
+	title := getFormattedTitle(summary)
+	return root + "/" + title + "-" + summary.ID + ".gmi"
 }
 
 func (client *client) getFileNameFromID(noteID string) (string, error) {
@@ -55,9 +52,9 @@ func (client *client) getFileNameFromID(noteID string) (string, error) {
 	return "", nil
 }
 
-func (client *client) writeNote(note *Note) error {
-	filename := client.getFileName(note)
-	if err := os.WriteFile(filename, []byte(note.Content), 0600); err != nil {
+func (client *client) writeNoteSummary(summary *s.EntitySummary[Note]) error {
+	filename := client.getFileName(summary)
+	if err := os.WriteFile(filename, []byte(summary.Data.Content), 0600); err != nil {
 		return err
 	}
 

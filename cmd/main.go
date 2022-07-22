@@ -29,7 +29,7 @@ func main() {
 
 	defer client.Disconnect()
 
-	fmt.Println("opening notes bucket...")
+	fmt.Println("accessing notes...")
 	if err := client.OpenBucket("note"); err != nil {
 		fmt.Println(err)
 		log.Fatal("unable to open bucket. Exiting.")

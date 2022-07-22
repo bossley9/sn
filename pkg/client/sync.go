@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
-// sync client with bucket
+// sync client notes
 func (client *client) Sync() error {
 	if len(client.cache.CurrentVersion) == 0 {
 		// initial sync
-		fmt.Println("\tno change version found. Making initial sync...")
-		if err := client.initialSync(); err != nil {
+		fmt.Println("\tno change version found in cache. Making initial sync...")
+		if err := client.initSync(); err != nil {
 			return err
 		}
 	} else {
@@ -25,7 +24,7 @@ func (client *client) Sync() error {
 		if err := client.updateSync(); err != nil {
 			fmt.Println(err)
 			fmt.Println("\tunable to update. Making initial sync...")
-			if err := client.initialSync(); err != nil {
+			if err := client.initSync(); err != nil {
 				return err
 			}
 		}
@@ -34,55 +33,56 @@ func (client *client) Sync() error {
 	return nil
 }
 
-func (client *client) initialSync() error {
-	maxNumNotes := 1
-	if err := client.simp.WriteIndexMessage(0, false, "", "", maxNumNotes); err != nil {
-		return err
-	}
-	message, err := client.simp.ReadMessage()
-	if err != nil {
-		return err
-	}
-	var indexRes s.IndexMessageResponse
-	if err := json.Unmarshal([]byte(message[4:]), &indexRes); err != nil {
-		return err
-	}
-	client.cache.CurrentVersion = indexRes.CurrentVersion
-	if err := WriteCache(client.cache); err != nil {
-		return err
-	}
+func (client *client) initSync() error {
+	noteSummaries := []s.EntitySummary[Note]{}
+	maxParallelNotes := 20
 
-	for _, entity := range indexRes.Entities {
-		if err := client.simp.WriteEntityMessage(0, entity.ID, entity.Version); err != nil {
-			fmt.Println(err)
-			continue
+	isFirstBatch := true
+	mark := ""
+	version := ""
+
+	for len(mark) > 0 || isFirstBatch {
+		if len(mark) > 0 {
+			fmt.Println("\t\tfetching batch " + mark + "...")
+		} else {
+			fmt.Println("\t\tfetching unmarked batch...")
 		}
-		entityMessage, err := client.simp.ReadMessage()
+
+		if err := client.simp.WriteIndexMessage(0, true, mark, "", maxParallelNotes); err != nil {
+			return err
+		}
+		message, err := client.simp.ReadMessage()
 		if err != nil {
+			return err
+		}
+		var indexRes s.IndexMessageResponse[Note]
+		if err := json.Unmarshal([]byte(message[4:]), &indexRes); err != nil {
+			return err
+		}
+
+		noteSummaries = append(noteSummaries, indexRes.Entities...)
+		mark = indexRes.Mark
+
+		if isFirstBatch {
+			version = indexRes.CurrentVersion
+			isFirstBatch = false
+		}
+	}
+
+	for _, summary := range noteSummaries {
+		if err := client.writeNoteSummary(&summary); err != nil {
 			fmt.Println(err)
 			continue
 		}
 
-		// remove first response line to parse data
-		entityLines := strings.Split(entityMessage, "\n")
-		_, entityLines = entityLines[0], entityLines[1:]
-		entityMessage = strings.Join(entityLines, "\n")
-
-		var noteRes s.EntityRes[Note]
-		if err := json.Unmarshal([]byte(entityMessage), &noteRes); err != nil {
+		if err := client.saveNote(summary.ID, summary.Version); err != nil {
 			fmt.Println(err)
 			continue
 		}
+	}
 
-		note := noteRes.Data
-
-		note.ID = entity.ID
-		note.Version = entity.Version
-
-		if err := client.writeNote(&note); err != nil {
-			fmt.Println(err)
-			continue
-		}
+	if err := client.setCurrentVersion(version); err != nil {
+		return err
 	}
 
 	return nil
@@ -140,6 +140,13 @@ func (client *client) updateSync() error {
 			continue
 		}
 
+		fmt.Println("\tupdating change version from " + client.cache.CurrentVersion + " to " + change.ChangeVersion + "...")
+		client.cache.CurrentVersion = change.ChangeVersion
+		client.cache.Notes[change.EntityID] = change.EndVersion
+		if err := client.writeCache(); err != nil {
+			fmt.Println("\t\tunable to update cache. Skipping...")
+			continue
+		}
 	}
 
 	return nil
