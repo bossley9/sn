@@ -26,7 +26,6 @@ type NoteDiff struct {
 func getFormattedTitle(summary *s.EntitySummary[Note]) string {
 	line := strings.Split(summary.Data.Content, "\n")[0]
 	trimmedLine := strings.TrimSpace(strings.TrimPrefix(line, "#"))
-
 	return strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
 }
 
@@ -36,7 +35,7 @@ func (client *client) getFileName(summary *s.EntitySummary[Note]) string {
 	return root + "/" + title + "-" + summary.ID + ".gmi"
 }
 
-func (client *client) getFileNameFromID(noteID string) (string, error) {
+func (client *client) getFileNameFromID(entityID string) (string, error) {
 	files, err := os.ReadDir(client.projectDir)
 	if err != nil {
 		return "", err
@@ -44,7 +43,7 @@ func (client *client) getFileNameFromID(noteID string) (string, error) {
 
 	for _, file := range files {
 		filename := file.Name()
-		if strings.Contains(filename, noteID) {
+		if strings.Contains(filename, entityID) {
 			return client.projectDir + "/" + filename, nil
 		}
 	}

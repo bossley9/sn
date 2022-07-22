@@ -1,7 +1,6 @@
 package jsondiff
 
 import (
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -17,7 +16,6 @@ func (jsondiff *StringJSONDiff) Apply(src string) string {
 	startIndex := 0
 	for _, diff := range diffs {
 		src, startIndex = applyDiff(diff, src, startIndex)
-		fmt.Println(src)
 	}
 
 	return src

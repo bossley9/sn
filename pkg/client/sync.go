@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
@@ -23,7 +22,7 @@ func (client *client) Sync() error {
 		fmt.Println("\tsyncing from version " + client.cache.CurrentVersion + "...")
 		if err := client.updateSync(); err != nil {
 			fmt.Println(err)
-			fmt.Println("\tunable to update. Making initial sync...")
+			fmt.Println("\tunable to update. Falling back to initial sync...")
 			if err := client.initSync(); err != nil {
 				return err
 			}
@@ -75,7 +74,8 @@ func (client *client) initSync() error {
 			continue
 		}
 
-		if err := client.saveNote(summary.ID, summary.Version); err != nil {
+		filename := client.getFileName(&summary)
+		if err := client.saveNote(summary.ID, summary.Version, filename); err != nil {
 			fmt.Println(err)
 			continue
 		}
@@ -89,8 +89,7 @@ func (client *client) initSync() error {
 }
 
 func (client *client) updateSync() error {
-	channel := 0
-	if err := client.simp.WriteChangeVersionMessage(channel, client.cache.CurrentVersion); err != nil {
+	if err := client.simp.WriteChangeVersionMessage(0, client.cache.CurrentVersion); err != nil {
 		return err
 	}
 	message, err := client.simp.ReadMessage()
@@ -98,12 +97,10 @@ func (client *client) updateSync() error {
 		return err
 	}
 
-	channelText := strconv.Itoa(channel)
-	if message == channelText+":cv:?" {
-		// change version does not exist for bucket
+	if message == "0:cv:?" {
 		return errors.New("change version does not exist for bucket")
-	} else if message == channelText+":c:[]" {
-		// client is up to date
+
+	} else if message == "0:c:[]" {
 		fmt.Println("\tclient is up to date!")
 		return nil
 	}
@@ -141,10 +138,14 @@ func (client *client) updateSync() error {
 		}
 
 		fmt.Println("\tupdating change version from " + client.cache.CurrentVersion + " to " + change.ChangeVersion + "...")
-		client.cache.CurrentVersion = change.ChangeVersion
-		client.cache.Notes[change.EntityID] = change.EndVersion
-		if err := client.writeCache(); err != nil {
-			fmt.Println("\t\tunable to update cache. Skipping...")
+
+		if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
+			fmt.Println("\t\tunable to set current version. Skipping...")
+			continue
+		}
+
+		if err := client.saveNote(change.EntityID, change.EndVersion, filename); err != nil {
+			fmt.Println("\t\tunable to update note. Skipping...")
 			continue
 		}
 	}
