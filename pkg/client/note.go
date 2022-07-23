@@ -1,11 +1,12 @@
 package client
 
 import (
+	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
-	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
 type Note struct {
@@ -23,21 +24,35 @@ type NoteDiff struct {
 	Content j.StringJSONDiff `json:"content"`
 }
 
-func (note *Note) getFormattedTitle() string {
-	// TODO remove symbols and cap length
-	line := strings.Split(note.Content, "\n")[0]
-	trimmedLine := strings.TrimSpace(strings.TrimPrefix(line, "#"))
-	return strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
+// given a content string of text, returns a formatted title in the form of an ID
+// 1. get first line
+// 2. remove heading indicator (#) and trim whitespace
+// 3. convert to lowercase and replace whitespace with hyphens
+// 4. remove symbols
+// 5. cap length to maxLen chars and trim hyphen suffix
+func GetContentTitleID(content string) string {
+	maxLen := 32
+	r, err := regexp.CompilePOSIX("[^a-zA-Z0-9-]+")
+	if err != nil {
+		log.Fatal("unable to parse title id regular expression. Exiting.")
+	}
+
+	firstLine := strings.Split(content, "\n")[0]
+	trimmedLine := strings.TrimSpace(strings.TrimPrefix(firstLine, "#"))
+	lowerLine := strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
+	sanitizedLine := r.ReplaceAllString(lowerLine, "")
+
+	cappedLine := sanitizedLine
+	if len(cappedLine) > maxLen {
+		cappedLine = cappedLine[:maxLen]
+	}
+
+	return strings.TrimSuffix(cappedLine, "-")
 }
 
-func getNoteName(noteID string, note *Note) string {
-	return note.getFormattedTitle() + "-" + noteID
-}
-
-func getFormattedTitle(summary *s.EntitySummary[Note]) string {
-	line := strings.Split(summary.Data.Content, "\n")[0]
-	trimmedLine := strings.TrimSpace(strings.TrimPrefix(line, "#"))
-	return strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
+// given a note id and note object, returns a unique note name identifier
+func GetNoteName(noteID string, note *Note) string {
+	return GetContentTitleID(note.Content) + "-" + noteID
 }
 
 func (client *client) getFileName(noteName string) string {
@@ -45,7 +60,7 @@ func (client *client) getFileName(noteName string) string {
 }
 
 func (client *client) writeNote(noteID string, note *Note) error {
-	name := getNoteName(noteID, note)
+	name := GetNoteName(noteID, note)
 	filename := client.getFileName(name)
 
 	if err := os.WriteFile(filename, []byte(note.Content), 0600); err != nil {

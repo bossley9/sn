@@ -69,7 +69,7 @@ func (client *client) saveNote(note *s.EntitySummary[Note]) error {
 
 	client.cache.Notes[note.ID] = NoteCache{
 		Version: note.Version,
-		Name:    getNoteName(note.ID, &note.Data),
+		Name:    GetNoteName(note.ID, &note.Data),
 	}
 
 	return client.writeCache()
