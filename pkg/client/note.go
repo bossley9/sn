@@ -23,37 +23,32 @@ type NoteDiff struct {
 	Content j.StringJSONDiff `json:"content"`
 }
 
+func (note *Note) getFormattedTitle() string {
+	// TODO remove symbols and cap length
+	line := strings.Split(note.Content, "\n")[0]
+	trimmedLine := strings.TrimSpace(strings.TrimPrefix(line, "#"))
+	return strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
+}
+
+func getNoteName(noteID string, note *Note) string {
+	return note.getFormattedTitle() + "-" + noteID
+}
+
 func getFormattedTitle(summary *s.EntitySummary[Note]) string {
 	line := strings.Split(summary.Data.Content, "\n")[0]
 	trimmedLine := strings.TrimSpace(strings.TrimPrefix(line, "#"))
 	return strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
 }
 
-func (client *client) getFileName(summary *s.EntitySummary[Note]) string {
-	root := client.projectDir
-	title := getFormattedTitle(summary)
-	return root + "/" + title + "-" + summary.ID + ".gmi"
+func (client *client) getFileName(noteName string) string {
+	return client.projectDir + "/" + noteName + ".gmi"
 }
 
-func (client *client) getFileNameFromID(entityID string) (string, error) {
-	files, err := os.ReadDir(client.projectDir)
-	if err != nil {
-		return "", err
-	}
+func (client *client) writeNote(noteID string, note *Note) error {
+	name := getNoteName(noteID, note)
+	filename := client.getFileName(name)
 
-	for _, file := range files {
-		filename := file.Name()
-		if strings.Contains(filename, entityID) {
-			return client.projectDir + "/" + filename, nil
-		}
-	}
-
-	return "", nil
-}
-
-func (client *client) writeNoteSummary(summary *s.EntitySummary[Note]) error {
-	filename := client.getFileName(summary)
-	if err := os.WriteFile(filename, []byte(summary.Data.Content), 0600); err != nil {
+	if err := os.WriteFile(filename, []byte(note.Content), 0600); err != nil {
 		return err
 	}
 

@@ -12,13 +12,11 @@ import (
 // sync client notes
 func (client *client) Sync() error {
 	if len(client.cache.CurrentVersion) == 0 {
-		// initial sync
 		fmt.Println("\tno change version found in cache. Making initial sync...")
 		if err := client.initSync(); err != nil {
 			return err
 		}
 	} else {
-		// update sync
 		fmt.Println("\tsyncing from version " + client.cache.CurrentVersion + "...")
 		if err := client.updateSync(); err != nil {
 			fmt.Println(err)
@@ -32,14 +30,16 @@ func (client *client) Sync() error {
 	return nil
 }
 
+// initial sync to load (or reload) all notes
 func (client *client) initSync() error {
-	noteSummaries := []s.EntitySummary[Note]{}
+	noteSummaries := make([]s.EntitySummary[Note], 0)
 	maxParallelNotes := 20
 
 	isFirstBatch := true
 	mark := ""
 	version := ""
 
+	// batch fetch notes
 	for len(mark) > 0 || isFirstBatch {
 		if len(mark) > 0 {
 			fmt.Println("\t\tfetching batch " + mark + "...")
@@ -68,19 +68,20 @@ func (client *client) initSync() error {
 		}
 	}
 
+	// write notes
 	for _, summary := range noteSummaries {
-		if err := client.writeNoteSummary(&summary); err != nil {
+		if err := client.writeNote(summary.ID, &summary.Data); err != nil {
 			fmt.Println(err)
 			continue
 		}
 
-		filename := client.getFileName(&summary)
-		if err := client.saveNote(summary.ID, summary.Version, filename); err != nil {
+		if err := client.saveNote(&summary); err != nil {
 			fmt.Println(err)
 			continue
 		}
 	}
 
+	// update current version
 	if err := client.setCurrentVersion(version); err != nil {
 		return err
 	}
@@ -113,23 +114,27 @@ func (client *client) updateSync() error {
 
 	fmt.Println("\tapplying changes...")
 	for _, change := range changes {
-		filename, err := client.getFileNameFromID(change.EntityID)
+		noteID := change.EntityID
+
+		noteCache, err := client.getCachedNote(noteID)
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println("\t\tunable to retrieve file for entity " + change.EntityID + ". Skipping...")
+			fmt.Println("\t\tunable to retrieve cache data for note " + noteID + ". Skipping...")
 			continue
 		}
+
+		filename := client.getFileName(noteCache.Name)
+
 		content, err := os.ReadFile(filename)
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println("\t\tunable to read file " + filename + ". Skipping...")
+			fmt.Println("\t\tunable to retrieve data for note " + noteID + ". Skipping...")
 			continue
 		}
 
-		fmt.Println("\tapplying change " + change.ChangeVersion + " to " + filename + "...")
-		diff := change.Values.Content
-
-		result := diff.Apply(string(content))
+		// apply diff
+		fmt.Println("\tapplying change " + change.ChangeVersion + " to note " + noteID + "...")
+		result := change.Values.Content.Apply(string(content))
 
 		if err := os.WriteFile(filename, []byte(result), 0600); err != nil {
 			fmt.Println(err)
@@ -144,7 +149,7 @@ func (client *client) updateSync() error {
 			continue
 		}
 
-		if err := client.saveNote(change.EntityID, change.EndVersion, filename); err != nil {
+		if err := client.setNoteVersion(change.EntityID, change.EndVersion); err != nil {
 			fmt.Println("\t\tunable to update note. Skipping...")
 			continue
 		}

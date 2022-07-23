@@ -2,7 +2,10 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
+
+	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
 type Cache struct {
@@ -12,8 +15,8 @@ type Cache struct {
 }
 
 type NoteCache struct {
-	Version  int    `json:"v"`
-	Filename string `json:"fn"`
+	Version int    `json:"v"`
+	Name    string `json:"n"`
 }
 
 func getCacheFile() string {
@@ -59,15 +62,42 @@ func (client *client) setCurrentVersion(version string) error {
 	return client.writeCache()
 }
 
-func (client *client) saveNote(entityID string, version int, filename string) error {
+func (client *client) saveNote(note *s.EntitySummary[Note]) error {
 	if client.cache.Notes == nil {
 		client.cache.Notes = make(map[string]NoteCache)
 	}
 
-	client.cache.Notes[entityID] = NoteCache{
-		Version:  version,
-		Filename: filename,
+	client.cache.Notes[note.ID] = NoteCache{
+		Version: note.Version,
+		Name:    getNoteName(note.ID, &note.Data),
 	}
 
 	return client.writeCache()
+}
+
+func (client *client) setNoteVersion(noteID string, version int) error {
+	if client.cache.Notes == nil {
+		return errors.New("note cache does not exist")
+	}
+	note, ok := client.cache.Notes[noteID]
+	if !ok {
+		return errors.New("note with id " + noteID + " does not exist")
+	}
+
+	note.Version = version
+	client.cache.Notes[noteID] = note
+
+	return client.writeCache()
+}
+
+func (client *client) getCachedNote(noteID string) (NoteCache, error) {
+	if client.cache.Notes == nil {
+		return NoteCache{}, errors.New("note cache does not exist")
+	}
+	note, ok := client.cache.Notes[noteID]
+	if !ok {
+		return NoteCache{}, errors.New("note with id " + noteID + " does not exist")
+	}
+
+	return note, nil
 }
