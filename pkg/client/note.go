@@ -93,3 +93,19 @@ func (client *client) writeNote(summary *NoteSummary) error {
 
 	return client.writeCache()
 }
+
+// given a note id, returns written content associated with that note
+func (client *client) readNote(noteID string) (string, error) {
+	noteCache, err := client.getCachedNote(noteID)
+	if err != nil {
+		return "", err
+	}
+
+	filename := client.getFileName(noteCache.Name)
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
+}
