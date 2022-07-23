@@ -20,6 +20,12 @@ type Note struct {
 	CreationDate   float32  `json:"creationDate"`
 }
 
+type NoteSummary struct {
+	ID      string
+	Version int
+	Content string
+}
+
 type NoteDiff struct {
 	Content j.StringJSONDiff `json:"content"`
 }
@@ -50,22 +56,40 @@ func GetContentTitleID(content string) string {
 	return strings.TrimSuffix(cappedLine, "-")
 }
 
-// given a note id and note object, returns a unique note name identifier
-func GetNoteName(noteID string, note *Note) string {
-	return GetContentTitleID(note.Content) + "-" + noteID
+// given a note id and content string, returns a unique note name identifier
+func GetNoteName(noteID string, content string) string {
+	return GetContentTitleID(content) + "-" + noteID
 }
 
 func (client *client) getFileName(noteName string) string {
 	return client.projectDir + "/" + noteName + ".gmi"
 }
 
-func (client *client) writeNote(noteID string, note *Note) error {
-	name := GetNoteName(noteID, note)
-	filename := client.getFileName(name)
+// given a note summary, writes the note to file and updates the cache if necessary
+func (client *client) writeNote(summary *NoteSummary) error {
+	// check for note name from cache
+	if client.cache.Notes == nil {
+		client.cache.Notes = make(map[string]NoteCache)
+	}
+	noteName := ""
+	noteCache, ok := client.cache.Notes[summary.ID]
+	if ok {
+		noteName = noteCache.Name
+	} else {
+		noteName = GetNoteName(summary.ID, summary.Content)
+	}
 
-	if err := os.WriteFile(filename, []byte(note.Content), 0600); err != nil {
+	// write note to file
+	filename := client.getFileName(noteName)
+	if err := os.WriteFile(filename, []byte(summary.Content), 0600); err != nil {
 		return err
 	}
 
-	return nil
+	// update cache
+	client.cache.Notes[summary.ID] = NoteCache{
+		Version: summary.Version,
+		Name:    noteName,
+	}
+
+	return client.writeCache()
 }

@@ -70,12 +70,14 @@ func (client *client) initSync() error {
 
 	// write notes
 	for _, summary := range noteSummaries {
-		if err := client.writeNote(summary.ID, &summary.Data); err != nil {
-			fmt.Println(err)
-			continue
+		// reformat data
+		noteSummary := NoteSummary{
+			ID:      summary.ID,
+			Version: summary.Version,
+			Content: summary.Data.Content,
 		}
 
-		if err := client.saveNote(&summary); err != nil {
+		if err := client.writeNote(&noteSummary); err != nil {
 			fmt.Println(err)
 			continue
 		}
@@ -136,9 +138,13 @@ func (client *client) updateSync() error {
 		fmt.Println("\tapplying change " + change.ChangeVersion + " to note " + noteID + "...")
 		result := change.Values.Content.Apply(string(content))
 
-		if err := os.WriteFile(filename, []byte(result), 0600); err != nil {
-			fmt.Println(err)
-			fmt.Println("\t\tunable to update file " + filename + ". Skipping...")
+		noteSummary := NoteSummary{
+			ID:      change.EntityID,
+			Version: change.EndVersion,
+			Content: result,
+		}
+		if err := client.writeNote(&noteSummary); err != nil {
+			fmt.Println("\t\tunable to update note " + noteSummary.ID + ". Skipping...")
 			continue
 		}
 
@@ -146,11 +152,6 @@ func (client *client) updateSync() error {
 
 		if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
 			fmt.Println("\t\tunable to set current version. Skipping...")
-			continue
-		}
-
-		if err := client.setNoteVersion(change.EntityID, change.EndVersion); err != nil {
-			fmt.Println("\t\tunable to update note. Skipping...")
 			continue
 		}
 	}
