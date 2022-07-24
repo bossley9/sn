@@ -28,6 +28,9 @@ type NoteSummary struct {
 
 type NoteDiff struct {
 	Content j.StringJSONDiff `json:"content"`
+	// TODO implement note deletion and note creation
+	// deletion uses jsondiff "deleted": { "o": "r", "v": true }
+	// creation can use "creationDate": { "o": "+", "v": (date in numeric form) }
 }
 
 // given a content string of text, returns a formatted title in the form of an ID
@@ -61,6 +64,7 @@ func GetNoteName(noteID string, content string) string {
 	return GetContentTitleID(content) + "-" + noteID
 }
 
+// given a note name, returns an absolute path filename
 func (client *client) getFileName(noteName string) string {
 	return client.projectDir + "/" + noteName + ".gmi"
 }

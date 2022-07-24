@@ -3,11 +3,39 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	c "git.sr.ht/~bossley9/sn/pkg/client"
 )
 
+func printusage() {
+	usage :=
+		`usage: sn [d]
+	d         download and sync with server
+	[no arg]  same as using the argument "d"`
+	fmt.Println(usage)
+}
+
 func main() {
+	args := os.Args
+	arg := "d"
+
+	if len(args) > 1 {
+		arg = args[1]
+	}
+
+	switch arg {
+	case "d":
+		downloadsync()
+	default:
+		printusage()
+		return
+	}
+
+	fmt.Println("done.")
+}
+
+func downloadsync() {
 	fmt.Println("initializing client...")
 	client, err := c.NewClient()
 	if err != nil {
@@ -39,6 +67,4 @@ func main() {
 	if err := client.Sync(); err != nil {
 		fmt.Println(err)
 	}
-
-	fmt.Println("done.")
 }

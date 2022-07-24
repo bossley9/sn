@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	isproduction "git.sr.ht/~bossley9/sn/pkg/isproduction"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -12,8 +14,9 @@ func writeMessage(conn *websocket.Conn, messageType int, message string) error {
 	if err := conn.WriteMessage(messageType, []byte(message)); err != nil {
 		return err
 	}
-	// TODO remove debug
-	fmt.Println("w " + message)
+	if !isproduction.Enabled {
+		fmt.Println("w " + message)
+	}
 
 	return nil
 }
@@ -24,8 +27,9 @@ func readMessage(conn *websocket.Conn) (int, string, error) {
 		return 0, "", err
 	}
 	message := string(raw)
-	// TODO remove debug
-	fmt.Println("r " + message)
+	if !isproduction.Enabled {
+		fmt.Println("r " + message)
+	}
 
 	return mtype, message, nil
 }
