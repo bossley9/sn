@@ -19,20 +19,23 @@ func (client *client) applyChange(change *s.Change[NoteDiff]) {
 			fmt.Println(err)
 			fmt.Println("\t\tunable to create note " + noteID + ". Skipping...")
 		}
-	} else if change.Values.Deleted.Value {
+	} else if change.Operation == j.OP_DELETE {
 		// note deletion
 		fmt.Println("\t\tdeleting note " + noteID + "...")
 		if err := client.applyDeletionChange(change); err != nil {
 			fmt.Println(err)
 			fmt.Println("\t\tunable to delete note " + noteID + ". Skipping...")
 		}
-	} else {
+	} else if len(change.Values.Content.Value) > 0 {
 		// note update
 		fmt.Println("\t\tupdating note " + noteID + "...")
 		if err := client.applyUpdateChange(change); err != nil {
 			fmt.Println(err)
 			fmt.Println("\t\tunable to update note " + noteID + ". Skipping...")
 		}
+	} else {
+		// unimplemented change
+		fmt.Println("\t\tunimplemented change to note " + noteID + ". Skipping...")
 	}
 
 	// update change version

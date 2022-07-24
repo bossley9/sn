@@ -27,9 +27,9 @@ type NoteSummary struct {
 }
 
 type NoteDiff struct {
-	Content      j.StringJSONDiff `json:"content"`
-	Deleted      j.BoolJSONDiff   `json:"deleted"`
-	CreationDate j.NumberJSONDiff `json:"creationDate"`
+	Content      j.StringJSONDiff  `json:"content"`
+	Deleted      j.BoolJSONDiff    `json:"deleted"`
+	CreationDate j.Float32JSONDiff `json:"creationDate"`
 }
 
 // given a content string of text, returns a formatted title in the form of an ID

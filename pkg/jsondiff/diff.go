@@ -7,4 +7,4 @@ type JSONDiff[T any] struct {
 
 type StringJSONDiff JSONDiff[string]
 type BoolJSONDiff JSONDiff[bool]
-type NumberJSONDiff JSONDiff[int]
+type Float32JSONDiff JSONDiff[float32]
