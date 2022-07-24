@@ -120,38 +120,3 @@ func (client *client) updateSync() error {
 
 	return nil
 }
-
-func (client *client) applyChange(change *s.Change[NoteDiff]) {
-	noteID := change.EntityID
-
-	// read note
-	content, err := client.readNote(noteID)
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println("\t\tunable to retrieve note " + noteID + ". Skipping...")
-		return
-	}
-
-	// apply diff
-	fmt.Println("\t\tapplying change " + change.ChangeVersion + " to note " + noteID + "...")
-	result := change.Values.Content.Apply(string(content))
-
-	// write note
-	fmt.Println("\t\twriting changes...")
-	noteSummary := NoteSummary{
-		ID:      noteID,
-		Version: change.EndVersion,
-		Content: result,
-	}
-	if err := client.writeNote(&noteSummary); err != nil {
-		fmt.Println("\t\tunable to update note " + noteSummary.ID + ". Skipping...")
-		return
-	}
-
-	// update change version
-	fmt.Println("\t\tupdating change version from " + client.cache.CurrentVersion + " to " + change.ChangeVersion + "...")
-	if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
-		fmt.Println("\t\tunable to set current version. Skipping...")
-		return
-	}
-}

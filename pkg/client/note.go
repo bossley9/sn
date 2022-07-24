@@ -27,10 +27,9 @@ type NoteSummary struct {
 }
 
 type NoteDiff struct {
-	Content j.StringJSONDiff `json:"content"`
-	// TODO implement note deletion and note creation
-	// deletion uses jsondiff "deleted": { "o": "r", "v": true }
-	// creation can use "creationDate": { "o": "+", "v": (date in numeric form) }
+	Content      j.StringJSONDiff `json:"content"`
+	Deleted      j.BoolJSONDiff   `json:"deleted"`
+	CreationDate j.NumberJSONDiff `json:"creationDate"`
 }
 
 // given a content string of text, returns a formatted title in the form of an ID

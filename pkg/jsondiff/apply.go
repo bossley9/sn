@@ -7,7 +7,7 @@ import (
 )
 
 func (jsondiff *StringJSONDiff) Apply(src string) string {
-	if jsondiff.Operation != "d" {
+	if jsondiff.Operation != OP_DMP {
 		// only able to apply DMP string diffs
 		return ""
 	}
@@ -22,19 +22,19 @@ func (jsondiff *StringJSONDiff) Apply(src string) string {
 }
 
 func applyDiff(diff string, src string, startIndex int) (string, int) {
-	operation := diff[0]
+	operation := string(diff[0])
 	newIndex := startIndex
 	end := ""
 
 	switch operation {
-	case '+': // insert
+	case OP_INSERT:
 		value, _ := url.QueryUnescape(diff[1:])
 		end = src[:newIndex] + value + src[newIndex:]
 		newIndex = newIndex + len(value)
-	case '-': // delete
+	case OP_DELETE:
 		value, _ := strconv.Atoi(diff[1:])
 		end = src[:newIndex] + src[newIndex+value:]
-	case '=': // equal
+	case OP_EQUAL:
 		fallthrough
 	default:
 		value, _ := strconv.Atoi(diff[1:])
