@@ -6,7 +6,7 @@ build: test
 	go build -tags isproduction -o ./$(EXE) ./cmd/main.go
 
 test:
-	go test ./pkg/jsondiff ./pkg/client
+	go test ./pkg/jsondiff
 
 run:
 	go run ./cmd/main.go

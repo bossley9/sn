@@ -3,7 +3,7 @@ package jsondiff
 import (
 	"testing"
 
-	th "git.sr.ht/~bossley9/sn/pkg/testhelpers"
+	th "git.sr.ht/~bossley9/gem/pkg/testhelpers"
 )
 
 func TestApply_Routine(t *testing.T) {

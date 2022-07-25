@@ -1,11 +1,9 @@
 package client
 
 import (
-	"log"
 	"os"
-	"regexp"
-	"strings"
 
+	"git.sr.ht/~bossley9/gem/pkg/url"
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 )
 
@@ -32,35 +30,9 @@ type NoteDiff struct {
 	CreationDate j.Float32JSONDiff `json:"creationDate"`
 }
 
-// given a content string of text, returns a formatted title in the form of an ID
-// 1. get first line
-// 2. remove heading indicator (#) and trim whitespace
-// 3. convert to lowercase and replace whitespace with hyphens
-// 4. remove symbols
-// 5. cap length to maxLen chars and trim hyphen suffix
-func GetContentTitleID(content string) string {
-	maxLen := 32
-	r, err := regexp.CompilePOSIX("[^a-zA-Z0-9-]+")
-	if err != nil {
-		log.Fatal("unable to parse title id regular expression. Exiting.")
-	}
-
-	firstLine := strings.Split(content, "\n")[0]
-	trimmedLine := strings.TrimSpace(strings.TrimPrefix(firstLine, "#"))
-	lowerLine := strings.ReplaceAll(strings.ToLower(trimmedLine), " ", "-")
-	sanitizedLine := r.ReplaceAllString(lowerLine, "")
-
-	cappedLine := sanitizedLine
-	if len(cappedLine) > maxLen {
-		cappedLine = cappedLine[:maxLen]
-	}
-
-	return strings.TrimSuffix(cappedLine, "-")
-}
-
 // given a note id and content string, returns a unique note name identifier
 func GetNoteName(noteID string, content string) string {
-	return GetContentTitleID(content) + "-" + noteID
+	return url.GenerateID(content) + "-" + noteID
 }
 
 // given a note name, returns an absolute path filename
