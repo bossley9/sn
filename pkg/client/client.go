@@ -26,7 +26,7 @@ func NewClient() (*client, error) {
 	if len(home) == 0 {
 		home = "."
 	}
-	c.projectDir = home + "/Documents/simplenote"
+	c.projectDir = home + "/Documents/sn"
 	if err := os.MkdirAll(c.projectDir, 0700); err != nil {
 		return nil, err
 	}

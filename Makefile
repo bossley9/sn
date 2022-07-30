@@ -11,6 +11,9 @@ test:
 run:
 	go run ./cmd/main.go
 
+run-c:
+	go run ./cmd/main.go c
+
 clean:
 	rm ./$(EXE)
 
