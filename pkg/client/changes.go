@@ -1,12 +1,22 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
+
+func parseNoteChangeMessage(message string) (s.ChangeVersionResponse[NoteDiff], error) {
+	response := message[4:]
+	var changes s.ChangeVersionResponse[NoteDiff]
+	if err := json.Unmarshal([]byte(response), &changes); err != nil {
+		return nil, err
+	}
+	return changes, nil
+}
 
 // given any change, applies that change to the specified note
 func (client *client) applyChange(change *s.Change[NoteDiff]) {
@@ -41,7 +51,7 @@ func (client *client) applyChange(change *s.Change[NoteDiff]) {
 	// update change version
 	fmt.Println("\t\tupdating change version from " + client.cache.CurrentVersion + " to " + change.ChangeVersion + "...")
 	if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
-		fmt.Println("\t\tunable to set current version. Skipping...")
+		fmt.Println("\t\tunable to update current version. Skipping...")
 		return
 	}
 }
@@ -92,6 +102,10 @@ func (client *client) applyDeletionChange(change *s.Change[NoteDiff]) error {
 	// remove file
 	filename := client.getFileName(noteCache.Name)
 	if err := os.Remove(filename); err != nil {
+		return err
+	}
+	vFilename := client.getVersionFileName(noteCache.Name)
+	if err := os.Remove(vFilename); err != nil {
 		return err
 	}
 

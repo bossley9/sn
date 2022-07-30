@@ -48,6 +48,16 @@ func TestGetDiff_CenterAlt(t *testing.T) {
 	th.AssertEqual(t, test.Value, ref)
 }
 
+func TestGetDiff_Overlap(t *testing.T) {
+	s1 := "XYZ ABC XYSSBC XYZ ABC"
+	s2 := "XYZ ABC XYZ ABC"
+	ref := "=10\t-7\t=5"
+
+	test := GetDiff(s1, s2)
+
+	th.AssertEqual(t, test.Value, ref)
+}
+
 func TestGetDiff_Same(t *testing.T) {
 	s1 := "the big cat walked to the store and ate"
 	s2 := "the big cat walked to the store and ate"

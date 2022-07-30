@@ -3,7 +3,11 @@ package simperium
 import (
 	"encoding/json"
 	"strconv"
+	"time"
 
+	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
+
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -17,29 +21,50 @@ type Change[T any] struct {
 	Values        T         `json:"v"`
 	ChangeIDs     []string  `json:"ccids"`
 	Data          *struct{} `json:"d,omitempty"`
+	Error         int       `json:"error,omitempty"`
 }
 
-func (client *Client) WriteChangeMessage(channel int, changeVersion string, currentVersion int, entityID string, operation string, values *struct{}) error {
-	change := Change[*struct{}]{
-		ClientID:      client.clientID,
-		ChangeVersion: changeVersion,
-		EndVersion:    currentVersion + 1,
-		SourceVersion: currentVersion,
+type UploadChange[T any] struct {
+	SourceVersion int    `json:"sv"`
+	EntityID      string `json:"id"`
+	Operation     string `json:"o"`
+	Values        T      `json:"v"`
+	ChangeID      string `json:"ccid"`
+}
+
+type UploadDiff struct {
+	Content          j.StringJSONDiff `json:"content"`
+	ModificationDate j.Int64JSONDiff  `json:"modificationDate"`
+}
+
+func (client *Client) WriteChangeMessage(channel int, changeVersion string, entityVersion int, entityID string, operation string, textDiff string) (string, error) {
+	ccid := uuid.New().String()
+	contentDiff := UploadDiff{
+		Content: j.StringJSONDiff{
+			Operation: "d",
+			Value:     textDiff,
+		},
+		ModificationDate: j.Int64JSONDiff{
+			Operation: "r",
+			Value:     time.Now().Unix(),
+		},
+	}
+	change := UploadChange[UploadDiff]{
+		SourceVersion: entityVersion,
 		EntityID:      entityID,
 		Operation:     operation,
-		Values:        values,
-		ChangeIDs:     []string{}, // TODO generate ID
-		Data:          nil,
+		Values:        contentDiff,
+		ChangeID:      ccid,
 	}
 
 	changeMsg, err := json.Marshal(change)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	message := strconv.Itoa(channel) + ":c:" + string(changeMsg)
 	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return ccid, nil
 }

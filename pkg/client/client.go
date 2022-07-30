@@ -13,6 +13,7 @@ import (
 
 type client struct {
 	projectDir string
+	versionDir string
 	cache      *Cache
 	simp       *s.Client
 	connection *websocket.Conn
@@ -38,6 +39,12 @@ func NewClient() (*client, error) {
 		cache = &Cache{}
 	}
 	c.cache = cache
+
+	fmt.Println("\tinitializing version control...")
+	c.versionDir = c.projectDir + "/.git"
+	if err := os.MkdirAll(c.versionDir, 0700); err != nil {
+		return nil, err
+	}
 
 	fmt.Println("\tcreating simperium client...")
 	c.simp = s.NewClient(APP_ID, API_KEY, "1.1", "node", "node-simperium", "0.0.1")

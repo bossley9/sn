@@ -40,7 +40,12 @@ func (client *client) getFileName(noteName string) string {
 	return client.projectDir + "/" + noteName + ".gmi"
 }
 
-// given a note summary, writes the note to file and updates the cache if necessary
+// given a note name, returns an absolute path version filename
+func (client *client) getVersionFileName(noteName string) string {
+	return client.versionDir + "/" + noteName + ".gmi"
+}
+
+// given a note summary, writes the note to file and updates the cache and version if necessary
 func (client *client) writeNote(summary *NoteSummary) error {
 	// check for note name from cache
 	if client.cache.Notes == nil {
@@ -57,6 +62,10 @@ func (client *client) writeNote(summary *NoteSummary) error {
 	// write note to file
 	filename := client.getFileName(noteName)
 	if err := os.WriteFile(filename, []byte(summary.Content), 0600); err != nil {
+		return err
+	}
+	vFilename := client.getVersionFileName(noteName)
+	if err := os.WriteFile(vFilename, []byte(summary.Content), 0600); err != nil {
 		return err
 	}
 

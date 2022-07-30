@@ -11,10 +11,11 @@ import (
 func printusage() {
 	usage :=
 		`usage: sn [d]
+	[no arg]  same as using the argument "d"
 	c         clear auth, reset cache and remove all notes
 	d         download and sync with server
 	o         open file directory in readonly mode using Nvim
-	[no arg]  same as using the argument "d"`
+	u         upload and sync with server`
 	fmt.Println(usage)
 }
 
@@ -33,6 +34,8 @@ func main() {
 		downloadsync()
 	case "o":
 		opendir()
+	case "u":
+		uploadsync()
 	default:
 		printusage()
 		return
@@ -99,5 +102,50 @@ func opendir() {
 
 	if err := client.OpenDirectory(); err != nil {
 		fmt.Println(err)
+	}
+}
+
+func uploadsync() {
+	fmt.Println("initializing client...")
+	client, err := c.NewClient()
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to initialize client. Exiting.")
+	}
+
+	fmt.Println("searching for local diffs...")
+	diffs, err := client.GetLocalDiffs()
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to find local diffs. Exiting.")
+	}
+	if len(diffs) == 0 {
+		log.Fatal("no local diffs. Exiting.")
+	}
+
+	fmt.Println("authenticating with server...")
+	if err := client.Authenticate(); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to authenticate. Exiting.")
+	}
+
+	fmt.Println("connecting to socket...")
+	if err := client.Connect(); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to connect to socket. Exiting.")
+	}
+
+	defer client.Disconnect()
+
+	fmt.Println("accessing notes...")
+	if err := client.OpenBucket("note"); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to open bucket. Exiting.")
+	}
+
+	fmt.Println("uploading diffs...")
+	if err := client.Upload(diffs); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to upload diffs. Exiting.")
 	}
 }

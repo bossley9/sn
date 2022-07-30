@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
@@ -91,6 +92,15 @@ func (client *client) initSync() error {
 }
 
 func (client *client) updateSync() error {
+	// force exit if local changes may conflict
+	diffs, err := client.GetLocalDiffs()
+	if err != nil {
+		return err
+	}
+	if len(diffs) > 0 {
+		log.Fatal("local diffs found. Please upload before syncing. Exiting.")
+	}
+
 	if err := client.simp.WriteChangeVersionMessage(0, client.cache.CurrentVersion); err != nil {
 		return err
 	}
@@ -107,9 +117,8 @@ func (client *client) updateSync() error {
 		return nil
 	}
 
-	response := message[4:]
-	var changes s.ChangeVersionResponse[NoteDiff]
-	if err := json.Unmarshal([]byte(response), &changes); err != nil {
+	changes, err := parseNoteChangeMessage(message)
+	if err != nil {
 		return err
 	}
 

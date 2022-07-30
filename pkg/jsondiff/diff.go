@@ -12,3 +12,4 @@ type JSONDiff[T any] struct {
 type StringJSONDiff JSONDiff[string]
 type BoolJSONDiff JSONDiff[bool]
 type Float32JSONDiff JSONDiff[float32]
+type Int64JSONDiff JSONDiff[int64]

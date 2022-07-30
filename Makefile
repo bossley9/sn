@@ -14,6 +14,9 @@ run:
 run-c:
 	go run ./cmd/main.go c
 
+run-u:
+	go run ./cmd/main.go u
+
 clean:
 	rm ./$(EXE)
 

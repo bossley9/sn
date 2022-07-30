@@ -75,17 +75,18 @@ func trimCommon(s1 string, s2 string) (string, string, string, string) {
 		}
 	}
 
-	suffixIndex := 0
-	for ; suffixIndex < minLen; suffixIndex++ {
-		if s1[s1len-1-suffixIndex] != s2[s2len-1-suffixIndex] {
+	suffixLen := 0
+	// minLen-prefixIndex prevents overlap
+	for ; suffixLen < minLen-prefixIndex; suffixLen++ {
+		if s1[s1len-1-suffixLen] != s2[s2len-1-suffixLen] {
 			break
 		}
 	}
 
-	return s1[prefixIndex : s1len-suffixIndex],
-		s2[prefixIndex : s2len-suffixIndex],
+	return s1[prefixIndex : s1len-suffixLen],
+		s2[prefixIndex : s2len-suffixLen],
 		s1[:prefixIndex],
-		s1[s1len-suffixIndex:]
+		s1[s1len-suffixLen:]
 }
 
 func computeDiff(s1 string, s2 string) []string {
