@@ -14,7 +14,6 @@ func printusage() {
 	[no arg]  same as using the argument "d"
 	c         clear auth, reset cache and remove all notes
 	d         download and sync with server
-	o         open file directory in readonly mode using Nvim
 	u         upload and sync with server`
 	fmt.Println(usage)
 }
@@ -32,8 +31,6 @@ func main() {
 		clear()
 	case "d":
 		downloadsync()
-	case "o":
-		opendir()
 	case "u":
 		uploadsync()
 	default:
@@ -88,19 +85,6 @@ func downloadsync() {
 
 	fmt.Println("syncing client...")
 	if err := client.Sync(); err != nil {
-		fmt.Println(err)
-	}
-}
-
-func opendir() {
-	fmt.Println("initializing client...")
-	client, err := c.NewClient()
-	if err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to initialize client. Exiting.")
-	}
-
-	if err := client.OpenDirectory(); err != nil {
 		fmt.Println(err)
 	}
 }
