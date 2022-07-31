@@ -5,15 +5,21 @@ import (
 	"os"
 	"strconv"
 
+	f "git.sr.ht/~bossley9/sn/pkg/fileio"
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 )
 
 // upload and sync local diffs with server
 func (client *client) Upload(diffs map[string]j.StringJSONDiff) error {
 	for noteID, diff := range diffs {
-		noteCache := client.cache.Notes[noteID]
+		noteCache, err := client.getCachedNote(noteID)
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println("\tunable to find note with id " + noteID + " in cache. Continuing...")
+			continue
+		}
 
-		ccid, err := client.simp.WriteChangeMessage(0, client.cache.CurrentVersion, noteCache.Version, noteID, "M", diff.Value)
+		ccid, err := client.simp.WriteChangeMessage(0, client.getCurrentVersion(), noteCache.Version, noteID, "M", diff.Value)
 		if err != nil {
 			fmt.Println(err)
 			fmt.Println("\tunable to upload changes to " + noteCache.Name + ". Continuing...")
@@ -46,7 +52,7 @@ func (client *client) Upload(diffs map[string]j.StringJSONDiff) error {
 			continue
 		}
 		vFilename := client.getVersionFileName(noteCache.Name)
-		if err := os.WriteFile(vFilename, raw, 0600); err != nil {
+		if err := os.WriteFile(vFilename, raw, f.RW); err != nil {
 			fmt.Println("\tunable to writing version changes for note " + noteCache.Name + ". Continuing...")
 			continue
 		}

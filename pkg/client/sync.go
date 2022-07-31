@@ -11,13 +11,14 @@ import (
 
 // sync client notes
 func (client *client) Sync() error {
-	if len(client.cache.CurrentVersion) == 0 {
+	currentVersion := client.getCurrentVersion()
+	if len(currentVersion) == 0 {
 		fmt.Println("\tno change version found in cache. Making initial sync...")
 		if err := client.initSync(); err != nil {
 			return err
 		}
 	} else {
-		fmt.Println("\tsyncing from version " + client.cache.CurrentVersion + "...")
+		fmt.Println("\tsyncing from version " + currentVersion + "...")
 		if err := client.updateSync(); err != nil {
 			fmt.Println(err)
 			fmt.Println("\tunable to update. Falling back to initial sync...")
@@ -101,7 +102,7 @@ func (client *client) updateSync() error {
 		log.Fatal("local diffs found. Please upload before syncing. Exiting.")
 	}
 
-	if err := client.simp.WriteChangeVersionMessage(0, client.cache.CurrentVersion); err != nil {
+	if err := client.simp.WriteChangeVersionMessage(0, client.getCurrentVersion()); err != nil {
 		return err
 	}
 	message, err := client.simp.ReadMessage()

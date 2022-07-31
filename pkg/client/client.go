@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"golang.org/x/term"
 
+	f "git.sr.ht/~bossley9/sn/pkg/fileio"
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
@@ -28,7 +29,7 @@ func NewClient() (*client, error) {
 		home = "."
 	}
 	c.projectDir = home + "/Documents/sn"
-	if err := os.MkdirAll(c.projectDir, 0700); err != nil {
+	if err := os.MkdirAll(c.projectDir, f.RWX); err != nil {
 		return nil, err
 	}
 
@@ -41,8 +42,10 @@ func NewClient() (*client, error) {
 	c.cache = cache
 
 	fmt.Println("\tinitializing version control...")
-	c.versionDir = c.projectDir + "/.git"
-	if err := os.MkdirAll(c.versionDir, 0700); err != nil {
+	// creating a directory within .git to automatically ignore version
+	// metadata in most IDEs
+	c.versionDir = c.projectDir + "/.git/version"
+	if err := os.MkdirAll(c.versionDir, f.RWX); err != nil {
 		return nil, err
 	}
 
@@ -54,7 +57,7 @@ func NewClient() (*client, error) {
 
 // retrieve user authentication token
 func (client *client) Authenticate() error {
-	if len(client.cache.AuthToken) > 0 {
+	if len(client.getToken()) > 0 {
 		fmt.Println("\tfound cached token.")
 		return nil
 	}
@@ -76,29 +79,17 @@ func (client *client) Authenticate() error {
 		return err
 	}
 
-	client.cache.AuthToken = token
-
-	if err := client.writeCache(); err != nil {
-		return err
-	}
-
-	return nil
+	return client.setToken(token)
 }
 
 // connect to the server websocket
 func (client *client) Connect() error {
-	if err := client.simp.ConnectToSocket(); err != nil {
-		return err
-	}
-	return nil
+	return client.simp.ConnectToSocket()
 }
 
 // disconnect from the server websocket
 func (client *client) Disconnect() error {
-	if err := client.simp.DisconnectSocket(); err != nil {
-		return err
-	}
-	return nil
+	return client.simp.DisconnectSocket()
 }
 
 // authorize access to a given bucket
@@ -107,6 +98,8 @@ func (client *client) OpenBucket(bucketName string) error {
 		return err
 	}
 
+	// need to read two messages for some reason -
+	// this isn't in the Simperium documentation
 	if _, err := client.simp.ReadMessage(); err != nil {
 		return err
 	}

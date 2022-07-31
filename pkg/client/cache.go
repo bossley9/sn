@@ -5,13 +5,13 @@ import (
 	"errors"
 	"os"
 
-	s "git.sr.ht/~bossley9/sn/pkg/simperium"
+	f "git.sr.ht/~bossley9/sn/pkg/fileio"
 )
 
 type Cache struct {
-	AuthToken      string               `json:"token"`
-	CurrentVersion string               `json:"current_version"`
-	Notes          map[string]NoteCache `json:"notes"`
+	AuthToken      string               `json:"t"`
+	CurrentVersion string               `json:"cv"`
+	Notes          map[string]NoteCache `json:"n"`
 }
 
 type NoteCache struct {
@@ -50,28 +50,26 @@ func (client *client) writeCache() error {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(cacheFile, cacheContent, 0600); err != nil {
+	if err := os.WriteFile(cacheFile, cacheContent, f.RW); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (client *client) setCurrentVersion(version string) error {
-	client.cache.CurrentVersion = version
+func (client *client) getToken() string {
+	return client.cache.AuthToken
+}
+func (client *client) setToken(token string) error {
+	client.cache.AuthToken = token
 	return client.writeCache()
 }
 
-func (client *client) saveNote(note *s.EntitySummary[Note]) error {
-	if client.cache.Notes == nil {
-		client.cache.Notes = make(map[string]NoteCache)
-	}
-
-	client.cache.Notes[note.ID] = NoteCache{
-		Version: note.Version,
-		Name:    GetNoteName(note.ID, note.Data.Content),
-	}
-
+func (client *client) getCurrentVersion() string {
+	return client.cache.CurrentVersion
+}
+func (client *client) setCurrentVersion(version string) error {
+	client.cache.CurrentVersion = version
 	return client.writeCache()
 }
 

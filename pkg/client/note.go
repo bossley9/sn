@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"git.sr.ht/~bossley9/gem/pkg/url"
+	f "git.sr.ht/~bossley9/sn/pkg/fileio"
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 )
 
@@ -61,11 +62,11 @@ func (client *client) writeNote(summary *NoteSummary) error {
 
 	// write note to file
 	filename := client.getFileName(noteName)
-	if err := os.WriteFile(filename, []byte(summary.Content), 0600); err != nil {
+	if err := os.WriteFile(filename, []byte(summary.Content), f.RW); err != nil {
 		return err
 	}
 	vFilename := client.getVersionFileName(noteName)
-	if err := os.WriteFile(vFilename, []byte(summary.Content), 0600); err != nil {
+	if err := os.WriteFile(vFilename, []byte(summary.Content), f.RW); err != nil {
 		return err
 	}
 

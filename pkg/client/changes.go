@@ -49,7 +49,7 @@ func (client *client) applyChange(change *s.Change[NoteDiff]) {
 	}
 
 	// update change version
-	fmt.Println("\t\tupdating change version from " + client.cache.CurrentVersion + " to " + change.ChangeVersion + "...")
+	fmt.Println("\t\tupdating change version from " + client.getCurrentVersion() + " to " + change.ChangeVersion + "...")
 	if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
 		fmt.Println("\t\tunable to update current version. Skipping...")
 		return
