@@ -14,6 +14,7 @@ func printusage() {
 	[no arg]  same as using the argument "d"
 	c         clear auth, reset cache and remove all notes
 	d         download and sync with server
+	r         reset cache and refetch all notes
 	u         upload and sync with server`
 	fmt.Println(usage)
 }
@@ -30,7 +31,9 @@ func main() {
 	case "c":
 		clear()
 	case "d":
-		downloadsync()
+		downloadsync(false)
+	case "r":
+		downloadsync(true)
 	case "u":
 		uploadsync()
 	default:
@@ -55,7 +58,7 @@ func clear() {
 	}
 }
 
-func downloadsync() {
+func downloadsync(reset bool) {
 	fmt.Println("initializing client...")
 	client, err := c.NewClient()
 	if err != nil {
@@ -83,9 +86,16 @@ func downloadsync() {
 		log.Fatal("unable to open bucket. Exiting.")
 	}
 
-	fmt.Println("syncing client...")
-	if err := client.Sync(); err != nil {
-		fmt.Println(err)
+	if reset {
+		fmt.Println("refetching...")
+		if err := client.RefetchSync(); err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		fmt.Println("syncing client...")
+		if err := client.Sync(); err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 

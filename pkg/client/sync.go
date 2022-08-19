@@ -14,7 +14,7 @@ func (client *client) Sync() error {
 	currentVersion := client.getCurrentVersion()
 	if len(currentVersion) == 0 {
 		fmt.Println("\tno change version found in cache. Making initial sync...")
-		if err := client.initSync(); err != nil {
+		if err := client.RefetchSync(); err != nil {
 			return err
 		}
 	} else {
@@ -22,7 +22,7 @@ func (client *client) Sync() error {
 		if err := client.updateSync(); err != nil {
 			fmt.Println(err)
 			fmt.Println("\tunable to update. Falling back to initial sync...")
-			if err := client.initSync(); err != nil {
+			if err := client.RefetchSync(); err != nil {
 				return err
 			}
 		}
@@ -32,7 +32,7 @@ func (client *client) Sync() error {
 }
 
 // initial sync to load (or reload) all notes
-func (client *client) initSync() error {
+func (client *client) RefetchSync() error {
 	noteSummaries := make([]s.EntitySummary[Note], 0)
 	maxParallelNotes := 20
 
@@ -99,6 +99,9 @@ func (client *client) updateSync() error {
 		return err
 	}
 	if len(diffs) > 0 {
+		for _, diff := range diffs {
+			fmt.Println("\t\t" + diff.Value)
+		}
 		log.Fatal("local diffs found. Please upload before syncing. Exiting.")
 	}
 
