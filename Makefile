@@ -14,6 +14,9 @@ run:
 run-c:
 	go run ./cmd/main.go c
 
+run-o:
+	go run ./cmd/main.go o
+
 run-r:
 	go run ./cmd/main.go r
 

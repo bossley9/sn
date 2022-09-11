@@ -14,6 +14,7 @@ func printusage() {
 	[no arg]  same as using the argument "d"
 	c         clear auth, reset cache and remove all notes
 	d         download and sync with server
+	o         open the project directory with $EDITOR
 	r         reset cache and refetch all notes
 	u         upload and sync with server`
 	fmt.Println(usage)
@@ -32,6 +33,8 @@ func main() {
 		clear()
 	case "d":
 		downloadsync(false)
+	case "o":
+		openProjectDir()
 	case "r":
 		downloadsync(true)
 	case "u":
@@ -96,6 +99,20 @@ func downloadsync(reset bool) {
 		if err := client.Sync(); err != nil {
 			fmt.Println(err)
 		}
+	}
+}
+
+func openProjectDir() {
+	fmt.Println("initializing client...")
+	client, err := c.NewClient()
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to initialize client. Exiting.")
+	}
+
+	if err := client.OpenProjectDir(); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to open $EDITOR. Exiting.")
 	}
 }
 
