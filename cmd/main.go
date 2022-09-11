@@ -114,6 +114,8 @@ func openProjectDir() {
 		fmt.Println(err)
 		log.Fatal("unable to open $EDITOR. Exiting.")
 	}
+
+	uploadsync()
 }
 
 func uploadsync() {
