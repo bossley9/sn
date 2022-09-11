@@ -110,12 +110,49 @@ func openProjectDir() {
 		log.Fatal("unable to initialize client. Exiting.")
 	}
 
+	fmt.Println("authenticating with server...")
+	if err := client.Authenticate(); err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("connecting to socket...")
+	if err := client.Connect(); err != nil {
+		fmt.Println(err)
+	}
+
+	defer client.Disconnect()
+
+	fmt.Println("accessing notes...")
+	if err := client.OpenBucket("note"); err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("syncing client...")
+	if err := client.Sync(); err != nil {
+		fmt.Println(err)
+	}
+
 	if err := client.OpenProjectDir(); err != nil {
 		fmt.Println(err)
 		log.Fatal("unable to open $EDITOR. Exiting.")
 	}
 
-	uploadsync()
+	fmt.Println("searching for local diffs...")
+	diffs, err := client.GetLocalDiffs()
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to find local diffs. Exiting.")
+	}
+	if len(diffs) == 0 {
+		fmt.Println("no local diffs. Exiting.")
+		return
+	}
+
+	fmt.Println("uploading diffs...")
+	if err := client.Upload(diffs); err != nil {
+		fmt.Println(err)
+		log.Fatal("unable to upload diffs. Exiting.")
+	}
 }
 
 func uploadsync() {
