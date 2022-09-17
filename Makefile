@@ -10,16 +10,14 @@ test:
 
 run:
 	go run ./cmd/main.go
-
 run-c:
 	go run ./cmd/main.go c
-
-run-o:
-	go run ./cmd/main.go o
-
+run-d:
+	go run ./cmd/main.go d
+run-h:
+	go run ./cmd/main.go h
 run-r:
 	go run ./cmd/main.go r
-
 run-u:
 	go run ./cmd/main.go u
 

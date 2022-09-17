@@ -41,10 +41,6 @@ $ make install
 
 ## Usage
 
-Sn has two main functions: to download note changes from the server and upload local modifications to the server.
-
-Downloading new notes or new changes is as simple as running `sn` to sync local changes with the Simperium server.
-
-Local modifications can be uploaded to the server with `sn u`.
+Sn has one primary function: to sync changes from the server and open the project directory with `$EDITOR`. Once the editor has closed, local modifications are uploaded to the server.
 
 Run `sn h` for more usage details.
