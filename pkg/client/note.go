@@ -38,12 +38,12 @@ func GetNoteName(noteID string, content string) string {
 
 // given a note name, returns an absolute path filename
 func (client *client) getFileName(noteName string) string {
-	return client.projectDir + "/" + noteName + ".gmi"
+	return client.projectDir + "/" + noteName + ".md"
 }
 
 // given a note name, returns an absolute path version filename
 func (client *client) getVersionFileName(noteName string) string {
-	return client.versionDir + "/" + noteName + ".gmi"
+	return client.versionDir + "/" + noteName + ".md"
 }
 
 // given a note summary, writes the note to file and updates the cache and version if necessary
