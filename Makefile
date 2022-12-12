@@ -3,7 +3,7 @@ BIN = $(PREFIX)/bin
 EXE = sn
 
 build: test
-	go build -tags isproduction -o ./$(EXE) ./cmd/main.go
+	go build -tags production -o ./$(EXE) ./cmd/main.go
 
 test:
 	go test ./pkg/jsondiff

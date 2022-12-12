@@ -1,4 +1,4 @@
-package debug
+package logger
 
 const (
 	Red     = "\033[0;31m"

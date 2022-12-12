@@ -1,4 +1,4 @@
-package debug
+package logger
 
 import "fmt"
 
@@ -26,7 +26,9 @@ func PrintError(a ...any) {
 }
 
 func PrintDebug(a ...any) {
-	fmt.Print(Magenta)
-	fmt.Print(a...)
-	fmt.Print(NoColor)
+	if !isProduction {
+		fmt.Print(Magenta)
+		fmt.Print(a...)
+		fmt.Print(NoColor)
+	}
 }
