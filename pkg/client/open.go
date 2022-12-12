@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-func (client *client) OpenProjectDir() error {
+func (client *Client) OpenProjectDir() error {
 	cmd := exec.Command(os.Getenv("EDITOR"))
 	cmd.Dir = client.projectDir
 	cmd.Stdin = os.Stdin

@@ -12,7 +12,7 @@ import (
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
-type client struct {
+type Client struct {
 	projectDir string
 	versionDir string
 	cache      *Cache
@@ -20,8 +20,8 @@ type client struct {
 	connection *websocket.Conn
 }
 
-func NewClient() (*client, error) {
-	c := client{}
+func NewClient() (*Client, error) {
+	c := Client{}
 
 	fmt.Println("\tinitializing project directory...")
 	home := os.Getenv("HOME")
@@ -56,7 +56,7 @@ func NewClient() (*client, error) {
 }
 
 // retrieve user authentication token
-func (client *client) Authenticate() error {
+func (client *Client) Authenticate() error {
 	if len(client.getToken()) > 0 {
 		fmt.Println("\tfound cached token.")
 		return nil
@@ -83,17 +83,17 @@ func (client *client) Authenticate() error {
 }
 
 // connect to the server websocket
-func (client *client) Connect() error {
+func (client *Client) Connect() error {
 	return client.simp.ConnectToSocket()
 }
 
 // disconnect from the server websocket
-func (client *client) Disconnect() error {
+func (client *Client) Disconnect() error {
 	return client.simp.DisconnectSocket()
 }
 
 // authorize access to a given bucket
-func (client *client) OpenBucket(bucketName string) error {
+func (client *Client) OpenBucket(bucketName string) error {
 	if err := client.simp.WriteInitMessage(0, client.cache.AuthToken, bucketName); err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 // upload and sync local diffs with server
-func (client *client) Upload(diffs map[string]j.StringJSONDiff) error {
+func (client *Client) Upload(diffs map[string]j.StringJSONDiff) error {
 	for noteID, diff := range diffs {
 		noteCache, err := client.getCachedNote(noteID)
 		if err != nil {

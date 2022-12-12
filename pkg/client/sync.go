@@ -10,7 +10,7 @@ import (
 )
 
 // sync client notes
-func (client *client) Sync() error {
+func (client *Client) Sync() error {
 	currentVersion := client.getCurrentVersion()
 	if len(currentVersion) == 0 {
 		fmt.Println("\tno change version found in cache. Making initial sync...")
@@ -32,7 +32,7 @@ func (client *client) Sync() error {
 }
 
 // initial sync to load (or reload) all notes
-func (client *client) RefetchSync() error {
+func (client *Client) RefetchSync() error {
 	noteSummaries := make([]s.EntitySummary[Note], 0)
 	maxParallelNotes := 20
 
@@ -92,7 +92,7 @@ func (client *client) RefetchSync() error {
 	return nil
 }
 
-func (client *client) updateSync() error {
+func (client *Client) updateSync() error {
 	// force exit if local changes may conflict
 	diffs, err := client.GetLocalDiffs()
 	if err != nil {

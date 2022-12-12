@@ -19,7 +19,7 @@ func parseNoteChangeMessage(message string) (s.ChangeVersionResponse[NoteDiff], 
 }
 
 // given any change, applies that change to the specified note
-func (client *client) applyChange(change *s.Change[NoteDiff]) {
+func (client *Client) applyChange(change *s.Change[NoteDiff]) {
 	noteID := change.EntityID
 
 	if change.Values.CreationDate.Operation == j.OP_INSERT {
@@ -57,7 +57,7 @@ func (client *client) applyChange(change *s.Change[NoteDiff]) {
 }
 
 // given an update change, applies that change to the specified note
-func (client *client) applyUpdateChange(change *s.Change[NoteDiff]) error {
+func (client *Client) applyUpdateChange(change *s.Change[NoteDiff]) error {
 	noteID := change.EntityID
 
 	content, err := client.readNote(noteID)
@@ -82,7 +82,7 @@ func (client *client) applyUpdateChange(change *s.Change[NoteDiff]) error {
 }
 
 // given a creation change, applies that change to the specified note
-func (client *client) applyCreationChange(change *s.Change[NoteDiff]) error {
+func (client *Client) applyCreationChange(change *s.Change[NoteDiff]) error {
 	summary := NoteSummary{
 		ID:      change.EntityID,
 		Version: change.EndVersion,
@@ -92,7 +92,7 @@ func (client *client) applyCreationChange(change *s.Change[NoteDiff]) error {
 }
 
 // given a deletion change, deletes the specified note
-func (client *client) applyDeletionChange(change *s.Change[NoteDiff]) error {
+func (client *Client) applyDeletionChange(change *s.Change[NoteDiff]) error {
 	noteID := change.EntityID
 	noteCache, err := client.getCachedNote(noteID)
 	if err != nil {

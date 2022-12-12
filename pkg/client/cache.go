@@ -43,7 +43,7 @@ func ReadCache() (*Cache, error) {
 	return &cache, nil
 }
 
-func (client *client) writeCache() error {
+func (client *Client) writeCache() error {
 	cacheFile := getCacheFile()
 
 	cacheContent, err := json.Marshal(client.cache)
@@ -57,23 +57,23 @@ func (client *client) writeCache() error {
 	return nil
 }
 
-func (client *client) getToken() string {
+func (client *Client) getToken() string {
 	return client.cache.AuthToken
 }
-func (client *client) setToken(token string) error {
+func (client *Client) setToken(token string) error {
 	client.cache.AuthToken = token
 	return client.writeCache()
 }
 
-func (client *client) getCurrentVersion() string {
+func (client *Client) getCurrentVersion() string {
 	return client.cache.CurrentVersion
 }
-func (client *client) setCurrentVersion(version string) error {
+func (client *Client) setCurrentVersion(version string) error {
 	client.cache.CurrentVersion = version
 	return client.writeCache()
 }
 
-func (client *client) setNoteVersion(noteID string, version int) error {
+func (client *Client) setNoteVersion(noteID string, version int) error {
 	if client.cache.Notes == nil {
 		return errors.New("note cache does not exist")
 	}
@@ -88,7 +88,7 @@ func (client *client) setNoteVersion(noteID string, version int) error {
 	return client.writeCache()
 }
 
-func (client *client) getCachedNote(noteID string) (NoteCache, error) {
+func (client *Client) getCachedNote(noteID string) (NoteCache, error) {
 	if client.cache.Notes == nil {
 		return NoteCache{}, errors.New("note cache does not exist")
 	}

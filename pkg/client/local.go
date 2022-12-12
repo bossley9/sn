@@ -7,7 +7,7 @@ import (
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 )
 
-func (client *client) GetLocalDiffs() (map[string]j.StringJSONDiff, error) {
+func (client *Client) GetLocalDiffs() (map[string]j.StringJSONDiff, error) {
 	diffs := make(map[string]j.StringJSONDiff, 0)
 	notes := client.cache.Notes
 

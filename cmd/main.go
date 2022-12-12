@@ -11,7 +11,7 @@ import (
 const cyan = "\033[0;36m"
 const none = "\033[0m"
 
-func printusage() {
+func printUsage() {
 	args := []string{
 		"[no arg]  download and sync with server, then open the project directory with $EDITOR",
 		"c         clear auth, reset cache and remove all notes",
@@ -42,15 +42,14 @@ func main() {
 	case "c":
 		sn.Clear()
 	case "d":
-		sn.Downloadsync(false)
+		sn.DownloadSync(false)
 	case "h":
-		printusage()
+		printUsage()
 	case "r":
-		sn.Downloadsync(true)
+		sn.DownloadSync(true)
 	case "u":
-		sn.Uploadsync()
+		sn.UploadSync()
 	default:
-		printusage()
-		return
+		printUsage()
 	}
 }

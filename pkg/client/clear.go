@@ -6,7 +6,7 @@ import (
 )
 
 // clear and remove all data
-func (client *client) Clear() error {
+func (client *Client) Clear() error {
 	fmt.Println("\tdeleting all notes...")
 	if err := os.RemoveAll(client.projectDir); err != nil {
 		return err

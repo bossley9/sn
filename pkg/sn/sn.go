@@ -94,7 +94,7 @@ func Clear() {
 	}
 }
 
-func Downloadsync(reset bool) {
+func DownloadSync(reset bool) {
 	fmt.Println("initializing client...")
 	client, err := c.NewClient()
 	if err != nil {
@@ -135,7 +135,7 @@ func Downloadsync(reset bool) {
 	}
 }
 
-func Uploadsync() {
+func UploadSync() {
 	fmt.Println("initializing client...")
 	client, err := c.NewClient()
 	if err != nil {

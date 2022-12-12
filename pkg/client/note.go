@@ -37,17 +37,17 @@ func GetNoteName(noteID string, content string) string {
 }
 
 // given a note name, returns an absolute path filename
-func (client *client) getFileName(noteName string) string {
+func (client *Client) getFileName(noteName string) string {
 	return client.projectDir + "/" + noteName + ".md"
 }
 
 // given a note name, returns an absolute path version filename
-func (client *client) getVersionFileName(noteName string) string {
+func (client *Client) getVersionFileName(noteName string) string {
 	return client.versionDir + "/" + noteName + ".md"
 }
 
 // given a note summary, writes the note to file and updates the cache and version if necessary
-func (client *client) writeNote(summary *NoteSummary) error {
+func (client *Client) writeNote(summary *NoteSummary) error {
 	// check for note name from cache
 	if client.cache.Notes == nil {
 		client.cache.Notes = make(map[string]NoteCache)
@@ -80,7 +80,7 @@ func (client *client) writeNote(summary *NoteSummary) error {
 }
 
 // given a note id, returns written content associated with that note
-func (client *client) readNote(noteID string) (string, error) {
+func (client *Client) readNote(noteID string) (string, error) {
 	noteCache, err := client.getCachedNote(noteID)
 	if err != nil {
 		return "", err
