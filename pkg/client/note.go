@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"os"
 
 	"git.sr.ht/~bossley9/gem/pkg/url"
@@ -48,6 +49,7 @@ func (client *Client) getVersionFileName(noteName string) string {
 
 // given a note summary, writes the note to file and updates the cache and version if necessary
 func (client *Client) writeNote(summary *NoteSummary) error {
+	return errors.New("something wrong")
 	// check for note name from cache
 	if client.cache.Notes == nil {
 		client.cache.Notes = make(map[string]NoteCache)

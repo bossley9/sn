@@ -1,19 +1,20 @@
 package client
 
 import (
-	"fmt"
 	"os"
+
+	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
 // clear and remove all data
 func (client *Client) Clear() error {
-	fmt.Println("\tdeleting all notes...")
+	l.PrintInfo("Deleting all notes... ")
 	if err := os.RemoveAll(client.projectDir); err != nil {
 		return err
 	}
 
 	// delete cache file
-	fmt.Println("\tdeleting cache...")
+	l.PrintInfo("deleting cache... ")
 	if err := os.Remove(getCacheFile()); err != nil {
 		return err
 	}

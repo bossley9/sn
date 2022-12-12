@@ -2,7 +2,6 @@
 package sn
 
 import (
-	"errors"
 	"os"
 
 	c "git.sr.ht/~bossley9/sn/pkg/client"
@@ -11,7 +10,7 @@ import (
 
 func printFatalAndExit(err error) {
 	l.PrintError(err)
-	l.PrintError("\nFatal error. Exiting.")
+	l.PrintError("\nFatal error. Exiting.\n")
 	os.Exit(1)
 }
 
@@ -56,7 +55,9 @@ func OpenProjectDir() {
 	l.PrintInfo("Searching for local diffs... ")
 	diffs := client.GetLocalDiffs()
 	if len(diffs) == 0 {
-		printFatalAndExit(errors.New("no local diffs found."))
+		l.PrintWarning("no local diffs found.")
+		l.PrintPlain("\n")
+		os.Exit(0)
 	}
 	l.PrintInfo("done.\n")
 
@@ -154,7 +155,7 @@ func UploadSync() {
 	l.PrintInfo("Searching for local diffs... ")
 	diffs := client.GetLocalDiffs()
 	if len(diffs) == 0 {
-		l.PrintWarning("No local diffs found.")
+		l.PrintWarning("no local diffs found.")
 		l.PrintPlain("\n")
 		os.Exit(0)
 	}

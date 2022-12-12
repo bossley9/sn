@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"os"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
@@ -35,9 +34,13 @@ func (client *Client) GetLocalDiffs() map[string]j.StringJSONDiff {
 			continue // no diff found
 		}
 
-		fmt.Print("\nLocal diff found for " + noteCache.Name + ".")
+		l.PrintInfo("\nLocal diff found for " + noteCache.Name + ".")
 
 		diffs[noteID] = diff
+	}
+
+	if len(diffs) > 0 {
+		l.PrintPlain("\n")
 	}
 
 	return diffs

@@ -2,10 +2,10 @@ package client
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
+	l "git.sr.ht/~bossley9/sn/pkg/logger"
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
@@ -24,35 +24,34 @@ func (client *Client) applyChange(change *s.Change[NoteDiff]) {
 
 	if change.Values.CreationDate.Operation == j.OP_INSERT {
 		// note creation
-		fmt.Println("\t\tcreating note " + noteID + "...")
+		l.PrintInfo("Creating note " + noteID + "... ")
 		if err := client.applyCreationChange(change); err != nil {
-			fmt.Println(err)
-			fmt.Println("\t\tunable to create note " + noteID + ". Skipping...")
+			l.PrintError(err)
+			l.PrintWarning("\nUnable to create note " + noteID + ". Skipping...\n")
 		}
 	} else if change.Operation == j.OP_DELETE {
 		// note deletion
-		fmt.Println("\t\tdeleting note " + noteID + "...")
+		l.PrintInfo("Deleting note " + noteID + "... ")
 		if err := client.applyDeletionChange(change); err != nil {
-			fmt.Println(err)
-			fmt.Println("\t\tunable to delete note " + noteID + ". Skipping...")
+			l.PrintError(err)
+			l.PrintWarning("\nUnable to delete note " + noteID + ". Skipping...\n")
 		}
 	} else if len(change.Values.Content.Value) > 0 {
 		// note update
-		fmt.Println("\t\tupdating note " + noteID + "...")
+		l.PrintInfo("Updating note " + noteID + "... ")
 		if err := client.applyUpdateChange(change); err != nil {
-			fmt.Println(err)
-			fmt.Println("\t\tunable to update note " + noteID + ". Skipping...")
+			l.PrintError(err)
+			l.PrintWarning("\nUnable to update note " + noteID + ". Skipping...\n")
 		}
 	} else {
 		// unimplemented change
-		fmt.Println("\t\tunimplemented change to note " + noteID + ". Skipping...")
+		l.PrintWarning("Unimplemented change to note " + noteID + ". Skipping...\n")
 	}
 
 	// update change version
-	fmt.Println("\t\tupdating change version from " + client.getCurrentVersion() + " to " + change.ChangeVersion + "...")
+	l.PrintInfo("Updating change version from " + client.getCurrentVersion() + " to " + change.ChangeVersion + "... \n")
 	if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
-		fmt.Println("\t\tunable to update current version. Skipping...")
-		return
+		l.PrintWarning("Unable to update current version. Skipping...\n")
 	}
 }
 
@@ -65,10 +64,10 @@ func (client *Client) applyUpdateChange(change *s.Change[NoteDiff]) error {
 		return err
 	}
 
-	fmt.Println("\t\tapplying change " + change.ChangeVersion + " to note " + noteID + "...")
+	l.PrintInfo("Applying change " + change.ChangeVersion + " to note " + noteID + "... ")
 	result := change.Values.Content.Apply(string(content))
 
-	fmt.Println("\t\twriting changes...")
+	l.PrintInfo("writing changes... ")
 	noteSummary := NoteSummary{
 		ID:      noteID,
 		Version: change.EndVersion,

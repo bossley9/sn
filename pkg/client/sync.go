@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
@@ -81,7 +80,9 @@ func (client *Client) RefetchSync() error {
 		}
 
 		if err := client.writeNote(&noteSummary); err != nil {
-			fmt.Println(err)
+			l.PrintWarning("Warning: ")
+			l.PrintWarning(err)
+			l.PrintPlain("\n")
 			continue
 		}
 	}
@@ -128,7 +129,7 @@ func (client *Client) updateSync() error {
 		return err
 	}
 
-	fmt.Println("\tapplying changes...")
+	// applying changes
 	for _, change := range changes {
 		client.applyChange(&change)
 	}

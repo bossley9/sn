@@ -9,6 +9,7 @@ import (
 	"golang.org/x/term"
 
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
+	l "git.sr.ht/~bossley9/sn/pkg/logger"
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
@@ -36,7 +37,7 @@ func NewClient() (*Client, error) {
 	// reading cache
 	cache, err := ReadCache()
 	if err != nil {
-		fmt.Println("\tunable to parse cache. Continuing...")
+		l.PrintWarning("unable to parse cache. Continuing... ")
 		cache = &Cache{}
 	}
 	c.cache = cache
@@ -62,18 +63,19 @@ func (client *Client) Authenticate() error {
 		return nil
 	}
 
-	fmt.Print("\tusername: ")
+	l.PrintPlain("\n")
+	l.PrintInfo("Username: ")
 	var username string
 	fmt.Scanln(&username)
 
-	fmt.Print("\tpassword (will not echo): ")
+	l.PrintInfo("Password (will not echo): ")
 	password, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
 		return err
 	}
-	fmt.Println()
+	l.PrintPlain("\n")
 
-	fmt.Println("\tfetching authorization...")
+	l.PrintInfo("Fetching authorization... ")
 	token, err := client.simp.Authorize(username, string(password))
 	if err != nil {
 		return err
