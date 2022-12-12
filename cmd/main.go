@@ -2,14 +2,11 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	l "git.sr.ht/~bossley9/sn/pkg/logger"
 	sn "git.sr.ht/~bossley9/sn/pkg/sn"
 )
-
-const cyan = "\033[0;36m"
-const none = "\033[0m"
 
 func printUsage() {
 	args := []string{
@@ -21,12 +18,12 @@ func printUsage() {
 		"u         upload and sync with server",
 	}
 
-	fmt.Println(cyan)
-	fmt.Println("Usage: sn [arg]")
+	l.PrintInfo("\n")
+	l.PrintInfo("Usage: sn [arg]\n")
 	for _, arg := range args {
-		fmt.Println(arg)
+		l.PrintInfo(arg + "\n")
 	}
-	fmt.Println(none)
+	l.PrintInfo("\n")
 }
 
 func main() {

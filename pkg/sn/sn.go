@@ -2,196 +2,186 @@
 package sn
 
 import (
-	"fmt"
-	"log"
+	"errors"
+	"os"
 
 	c "git.sr.ht/~bossley9/sn/pkg/client"
+	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
-const red = "\033[0;31m"
-const cyan = "\033[0;36m"
-const none = "\033[0m"
-
 func printFatalAndExit(err error) {
-	fmt.Print(red)
-	fmt.Println(err)
-	log.Fatal("Fatal error. Exiting." + none)
+	l.PrintError(err)
+	l.PrintError("\nFatal error. Exiting.")
+	os.Exit(1)
 }
 
 func OpenProjectDir() {
-	fmt.Println("initializing client...")
+	l.PrintInfo("Initializing client... ")
 	client, err := c.NewClient()
 	if err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to initialize client. Exiting.")
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("authenticating with server...")
+	l.PrintInfo("Authenticating with server... ")
 	if err := client.Authenticate(); err != nil {
-		fmt.Println(err)
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("connecting to socket...")
+	l.PrintInfo("Connecting to socket... ")
 	if err := client.Connect(); err != nil {
-		fmt.Println(err)
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("accessing notes...")
+	l.PrintInfo("Accessing notes... ")
 	if err := client.OpenBucket("note"); err != nil {
-		fmt.Println(err)
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("syncing client...")
+	l.PrintInfo("Syncing client... ")
 	if err := client.Sync(); err != nil {
-		fmt.Println(err)
+		printFatalAndExit(err)
 	}
-
 	client.Disconnect() // disconnect after sync to prevent timeout
+	l.PrintInfo("done.\n")
 
 	// open project
 	if err := client.OpenProjectDir(); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to open $EDITOR. Exiting.")
+		printFatalAndExit(err)
 	}
 
-	fmt.Println("searching for local diffs...")
-	diffs, err := client.GetLocalDiffs()
-	if err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to find local diffs. Exiting.")
-	}
+	l.PrintInfo("Searching for local diffs... ")
+	diffs := client.GetLocalDiffs()
 	if len(diffs) == 0 {
-		fmt.Println("no local diffs. Exiting.")
-		return
+		printFatalAndExit(errors.New("no local diffs found."))
 	}
+	l.PrintInfo("done.\n")
 
 	// reconnect after edits
-	fmt.Println("authenticating with server...")
+	l.PrintInfo("Authenticating with server... ")
 	if err := client.Authenticate(); err != nil {
-		fmt.Println(err)
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("connecting to socket...")
+	l.PrintInfo("Connecting to socket... ")
 	if err := client.Connect(); err != nil {
-		fmt.Println(err)
+		printFatalAndExit(err)
 	}
-
 	defer client.Disconnect()
+	l.PrintInfo("done.\n")
 
-	fmt.Println("accessing notes...")
+	l.PrintInfo("Accessing notes... ")
 	if err := client.OpenBucket("note"); err != nil {
-		fmt.Println(err)
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("uploading diffs...")
+	l.PrintInfo("Uploading diffs... ")
 	if err := client.Upload(diffs); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to upload diffs. Exiting.")
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 }
 
 func Clear() {
-	fmt.Println("initializing client...")
+	l.PrintInfo("Initializing client... ")
 	client, err := c.NewClient()
 	if err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to initialize client. Exiting.")
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("clearing data...")
+	l.PrintInfo("Clearing data... ")
 	if err := client.Clear(); err != nil {
-		fmt.Println(err)
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 }
 
 func DownloadSync(reset bool) {
-	fmt.Println(cyan)
-
-	fmt.Print("Initializing client... ")
+	l.PrintInfo("Initializing client... ")
 	client, err := c.NewClient()
 	if err != nil {
 		printFatalAndExit(err)
 	}
-	fmt.Println("done.")
+	l.PrintInfo("done.\n")
 
-	fmt.Print("Authenticating with server... ")
+	l.PrintInfo("Authenticating with server... ")
 	if err := client.Authenticate(); err != nil {
 		printFatalAndExit(err)
 	}
-	fmt.Println("done.")
+	l.PrintInfo("done.\n")
 
-	fmt.Print("Connecting to socket... ")
+	l.PrintInfo("Connecting to socket... ")
 	if err := client.Connect(); err != nil {
 		printFatalAndExit(err)
 	}
 	defer client.Disconnect()
-	fmt.Println("done.")
+	l.PrintInfo("done.\n")
 
-	fmt.Print("Accessing notes... ")
+	l.PrintInfo("Accessing notes... ")
 	if err := client.OpenBucket("note"); err != nil {
 		printFatalAndExit(err)
 	}
-	fmt.Print(cyan)
-	fmt.Println("done.")
+	l.PrintInfo("done.\n")
 
 	if reset {
-		fmt.Print("Refetching...")
+		l.PrintInfo("Refetching... ")
 		if err := client.RefetchSync(); err != nil {
 			printFatalAndExit(err)
 		}
 	} else {
-		fmt.Print("Syncing client... ")
+		l.PrintInfo("Syncing client... ")
 		if err := client.Sync(); err != nil {
 			printFatalAndExit(err)
 		}
 	}
-	fmt.Print(cyan)
-	fmt.Println("done.")
-
-	fmt.Println(none)
+	l.PrintInfo("done.\n")
 }
 
 func UploadSync() {
-	fmt.Println("initializing client...")
+	l.PrintInfo("Initializing client... ")
 	client, err := c.NewClient()
 	if err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to initialize client. Exiting.")
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("searching for local diffs...")
-	diffs, err := client.GetLocalDiffs()
-	if err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to find local diffs. Exiting.")
-	}
+	l.PrintInfo("Searching for local diffs... ")
+	diffs := client.GetLocalDiffs()
 	if len(diffs) == 0 {
-		log.Fatal("no local diffs. Exiting.")
+		l.PrintWarning("No local diffs found.")
+		l.PrintPlain("\n")
+		os.Exit(0)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("authenticating with server...")
+	l.PrintInfo("Authenticating with server... ")
 	if err := client.Authenticate(); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to authenticate. Exiting.")
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("connecting to socket...")
+	l.PrintInfo("Connecting to socket... ")
 	if err := client.Connect(); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to connect to socket. Exiting.")
+		printFatalAndExit(err)
 	}
-
 	defer client.Disconnect()
+	l.PrintInfo("done.\n")
 
-	fmt.Println("accessing notes...")
+	l.PrintInfo("Accessing notes... ")
 	if err := client.OpenBucket("note"); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to open bucket. Exiting.")
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 
-	fmt.Println("uploading diffs...")
+	l.PrintInfo("Uploading diffs... ")
 	if err := client.Upload(diffs); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to upload diffs. Exiting.")
+		printFatalAndExit(err)
 	}
+	l.PrintInfo("done.\n")
 }

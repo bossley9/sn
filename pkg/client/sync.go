@@ -6,32 +6,24 @@ import (
 	"fmt"
 	"os"
 
+	l "git.sr.ht/~bossley9/sn/pkg/logger"
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
-
-const red = "\033[0;31m"
-const yellow = "\033[0;33m"
-const cyan = "\033[0;36m"
-const none = "\033[0m"
 
 // sync client notes
 func (client *Client) Sync() error {
 	currentVersion := client.getCurrentVersion()
 	if len(currentVersion) == 0 {
-		fmt.Print(yellow)
-		fmt.Print("no version found in cache. Making fresh sync...")
-		fmt.Print(cyan)
+		l.PrintWarning("no version found in cache. Making fresh sync...")
 		if err := client.RefetchSync(); err != nil {
 			return err
 		}
 	} else {
-		fmt.Print("syncing from version " + currentVersion + "... ")
+		l.PrintInfo("syncing from version " + currentVersion + "... ")
 		if err := client.updateSync(); err != nil {
-			fmt.Print(red)
-			fmt.Println(err)
-			fmt.Print(yellow)
-			fmt.Print("Falling back to fresh sync... ")
-			fmt.Print(cyan)
+			l.PrintError(err)
+			l.PrintInfo("\n")
+			l.PrintWarning("Falling back to fresh sync... ")
 			if err := client.RefetchSync(); err != nil {
 				return err
 			}
@@ -53,11 +45,9 @@ func (client *Client) RefetchSync() error {
 	// batch fetch notes
 	for len(mark) > 0 || isFirstBatch {
 		if len(mark) > 0 {
-			fmt.Print(cyan)
-			fmt.Print("\nFetching batch " + mark + "... ")
+			l.PrintInfo("\nFetching batch " + mark + "... ")
 		} else {
-			fmt.Print(cyan)
-			fmt.Print("\nFetching batch... ")
+			l.PrintInfo("\nFetching batch... ")
 		}
 
 		if err := client.simp.WriteIndexMessage(0, true, mark, "", maxParallelNotes); err != nil {
@@ -106,19 +96,15 @@ func (client *Client) RefetchSync() error {
 
 func (client *Client) updateSync() error {
 	// force exit if local changes may conflict
-	diffs, err := client.GetLocalDiffs()
-	if err != nil {
-		return err
-	}
-	fmt.Println(none)
+	diffs := client.GetLocalDiffs()
+	l.PrintPlain("\n")
 	if len(diffs) > 0 {
 		for _, diff := range diffs {
-			fmt.Println(diff.Value)
+			l.PrintPlain(diff.Value + "\n")
 			// TODO display a richer diff for usability
 		}
-		fmt.Println(yellow)
-		fmt.Println("Local diffs found. Please upload changes before syncing.")
-		fmt.Println(none)
+		l.PrintPlain("\n")
+		l.PrintWarning("Local diffs found. Please upload changes before syncing.\n")
 		os.Exit(0)
 	}
 
@@ -133,8 +119,7 @@ func (client *Client) updateSync() error {
 	if message == "0:cv:?" {
 		return errors.New("change version does not exist.")
 	} else if message == "0:c:[]" {
-		fmt.Print(cyan)
-		fmt.Print("already up to date! ")
+		l.PrintInfo("already up to date! ")
 		return nil
 	}
 

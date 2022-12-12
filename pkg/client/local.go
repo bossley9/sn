@@ -5,14 +5,15 @@ import (
 	"os"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
+	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
-func (client *Client) GetLocalDiffs() (map[string]j.StringJSONDiff, error) {
+func (client *Client) GetLocalDiffs() map[string]j.StringJSONDiff {
 	diffs := make(map[string]j.StringJSONDiff, 0)
 	notes := client.cache.Notes
 
 	if len(notes) == 0 {
-		return diffs, nil
+		return diffs
 	}
 
 	for noteID, noteCache := range notes {
@@ -20,14 +21,12 @@ func (client *Client) GetLocalDiffs() (map[string]j.StringJSONDiff, error) {
 		vFilename := client.getVersionFileName(noteCache.Name)
 		s1, err := os.ReadFile(vFilename)
 		if err != nil {
-			fmt.Println(err)
-			fmt.Println("\t\tunable to read file " + vFilename + " for versioning. Skipping...")
+			l.PrintWarning("unable to read file " + vFilename + " for versioning. Skipping...\n")
 			continue
 		}
 		s2, err := os.ReadFile(filename)
 		if err != nil {
-			fmt.Println(err)
-			fmt.Println("\t\tunable to read file " + filename + " for versioning. Skipping...")
+			l.PrintWarning("unable to read file " + filename + " for versioning. Skipping...\n")
 			continue
 		}
 
@@ -36,10 +35,10 @@ func (client *Client) GetLocalDiffs() (map[string]j.StringJSONDiff, error) {
 			continue // no diff found
 		}
 
-		fmt.Println("local diff found for " + noteCache.Name + ".")
+		fmt.Print("\nLocal diff found for " + noteCache.Name + ".")
 
 		diffs[noteID] = diff
 	}
 
-	return diffs, nil
+	return diffs
 }
