@@ -1,8 +1,6 @@
 package simperium
 
 import (
-	"fmt"
-
 	isproduction "git.sr.ht/~bossley9/sn/pkg/isproduction"
 
 	"github.com/gorilla/websocket"
@@ -13,7 +11,7 @@ func writeMessage(conn *websocket.Conn, messageType int, message string) error {
 		return err
 	}
 	if !isproduction.Enabled {
-		fmt.Println("w " + message)
+		printDebugMessage("W " + message)
 	}
 
 	return nil
@@ -26,7 +24,7 @@ func readMessage(conn *websocket.Conn) (int, string, error) {
 	}
 	message := string(raw)
 	if !isproduction.Enabled {
-		fmt.Println("r " + message)
+		printDebugMessage("R " + message)
 	}
 
 	return mtype, message, nil
