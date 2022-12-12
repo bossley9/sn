@@ -8,6 +8,16 @@ import (
 	c "git.sr.ht/~bossley9/sn/pkg/client"
 )
 
+const red = "\033[0;31m"
+const cyan = "\033[0;36m"
+const none = "\033[0m"
+
+func printFatalAndExit(err error) {
+	fmt.Print(red)
+	fmt.Println(err)
+	log.Fatal("Fatal error. Exiting." + none)
+}
+
 func OpenProjectDir() {
 	fmt.Println("initializing client...")
 	client, err := c.NewClient()
@@ -95,44 +105,50 @@ func Clear() {
 }
 
 func DownloadSync(reset bool) {
-	fmt.Println("initializing client...")
+	fmt.Println(cyan)
+
+	fmt.Print("Initializing client... ")
 	client, err := c.NewClient()
 	if err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to initialize client. Exiting.")
+		printFatalAndExit(err)
 	}
+	fmt.Println("done.")
 
-	fmt.Println("authenticating with server...")
+	fmt.Print("Authenticating with server... ")
 	if err := client.Authenticate(); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to authenticate. Exiting.")
+		printFatalAndExit(err)
 	}
+	fmt.Println("done.")
 
-	fmt.Println("connecting to socket...")
+	fmt.Print("Connecting to socket... ")
 	if err := client.Connect(); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to connect to socket. Exiting.")
+		printFatalAndExit(err)
 	}
-
 	defer client.Disconnect()
+	fmt.Println("done.")
 
-	fmt.Println("accessing notes...")
+	fmt.Print("Accessing notes... ")
 	if err := client.OpenBucket("note"); err != nil {
-		fmt.Println(err)
-		log.Fatal("unable to open bucket. Exiting.")
+		printFatalAndExit(err)
 	}
+	fmt.Print(cyan)
+	fmt.Println("done.")
 
 	if reset {
-		fmt.Println("refetching...")
+		fmt.Print("Refetching...")
 		if err := client.RefetchSync(); err != nil {
-			fmt.Println(err)
+			printFatalAndExit(err)
 		}
 	} else {
-		fmt.Println("syncing client...")
+		fmt.Print("Syncing client... ")
 		if err := client.Sync(); err != nil {
-			fmt.Println(err)
+			printFatalAndExit(err)
 		}
 	}
+	fmt.Print(cyan)
+	fmt.Println("done.")
+
+	fmt.Println(none)
 }
 
 func UploadSync() {

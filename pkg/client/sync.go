@@ -4,24 +4,34 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"os"
 
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
+
+const red = "\033[0;31m"
+const yellow = "\033[0;33m"
+const cyan = "\033[0;36m"
+const none = "\033[0m"
 
 // sync client notes
 func (client *Client) Sync() error {
 	currentVersion := client.getCurrentVersion()
 	if len(currentVersion) == 0 {
-		fmt.Println("\tno change version found in cache. Making initial sync...")
+		fmt.Print(yellow)
+		fmt.Print("no version found in cache. Making fresh sync...")
+		fmt.Print(cyan)
 		if err := client.RefetchSync(); err != nil {
 			return err
 		}
 	} else {
-		fmt.Println("\tsyncing from version " + currentVersion + "...")
+		fmt.Print("syncing from version " + currentVersion + "... ")
 		if err := client.updateSync(); err != nil {
+			fmt.Print(red)
 			fmt.Println(err)
-			fmt.Println("\tunable to update. Falling back to initial sync...")
+			fmt.Print(yellow)
+			fmt.Print("Falling back to fresh sync... ")
+			fmt.Print(cyan)
 			if err := client.RefetchSync(); err != nil {
 				return err
 			}
@@ -43,9 +53,11 @@ func (client *Client) RefetchSync() error {
 	// batch fetch notes
 	for len(mark) > 0 || isFirstBatch {
 		if len(mark) > 0 {
-			fmt.Println("\t\tfetching batch " + mark + "...")
+			fmt.Print(cyan)
+			fmt.Print("\nFetching batch " + mark + "... ")
 		} else {
-			fmt.Println("\t\tfetching unmarked batch...")
+			fmt.Print(cyan)
+			fmt.Print("\nFetching batch... ")
 		}
 
 		if err := client.simp.WriteIndexMessage(0, true, mark, "", maxParallelNotes); err != nil {
@@ -98,11 +110,16 @@ func (client *Client) updateSync() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(none)
 	if len(diffs) > 0 {
 		for _, diff := range diffs {
-			fmt.Println("\t\t" + diff.Value)
+			fmt.Println(diff.Value)
+			// TODO display a richer diff for usability
 		}
-		log.Fatal("local diffs found. Please upload before syncing. Exiting.")
+		fmt.Println(yellow)
+		fmt.Println("Local diffs found. Please upload changes before syncing.")
+		fmt.Println(none)
+		os.Exit(0)
 	}
 
 	if err := client.simp.WriteChangeVersionMessage(0, client.getCurrentVersion()); err != nil {
@@ -114,10 +131,10 @@ func (client *Client) updateSync() error {
 	}
 
 	if message == "0:cv:?" {
-		return errors.New("change version does not exist for bucket")
-
+		return errors.New("change version does not exist.")
 	} else if message == "0:c:[]" {
-		fmt.Println("\tclient is already up to date!")
+		fmt.Print(cyan)
+		fmt.Print("already up to date! ")
 		return nil
 	}
 

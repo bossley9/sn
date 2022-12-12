@@ -36,7 +36,7 @@ func (client *Client) GetLocalDiffs() (map[string]j.StringJSONDiff, error) {
 			continue // no diff found
 		}
 
-		fmt.Println("\t\tdiff found for " + noteCache.Name + ".")
+		fmt.Println("local diff found for " + noteCache.Name + ".")
 
 		diffs[noteID] = diff
 	}

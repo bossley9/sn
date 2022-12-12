@@ -23,7 +23,7 @@ type Client struct {
 func NewClient() (*Client, error) {
 	c := Client{}
 
-	fmt.Println("\tinitializing project directory...")
+	// initializing project directory
 	home := os.Getenv("HOME")
 	if len(home) == 0 {
 		home = "."
@@ -33,7 +33,7 @@ func NewClient() (*Client, error) {
 		return nil, err
 	}
 
-	fmt.Println("\treading cache...")
+	// reading cache
 	cache, err := ReadCache()
 	if err != nil {
 		fmt.Println("\tunable to parse cache. Continuing...")
@@ -41,7 +41,7 @@ func NewClient() (*Client, error) {
 	}
 	c.cache = cache
 
-	fmt.Println("\tinitializing version control...")
+	// initializing version control
 	// creating a directory within .git to automatically ignore version
 	// metadata in most IDEs
 	c.versionDir = c.projectDir + "/.git/version"
@@ -49,7 +49,7 @@ func NewClient() (*Client, error) {
 		return nil, err
 	}
 
-	fmt.Println("\tcreating simperium client...")
+	// creating simperium client
 	c.simp = s.NewClient(APP_ID, API_KEY, "1.1", "node", "node-simperium", "0.0.1")
 
 	return &c, nil
@@ -58,7 +58,7 @@ func NewClient() (*Client, error) {
 // retrieve user authentication token
 func (client *Client) Authenticate() error {
 	if len(client.getToken()) > 0 {
-		fmt.Println("\tfound cached token.")
+		// found cached token
 		return nil
 	}
 
