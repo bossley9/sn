@@ -3,23 +3,23 @@ BIN = $(PREFIX)/bin
 EXE = sn
 
 build: test
-	go build -tags production -o ./$(EXE) ./cmd/main.go
+	go build -tags production -o ./$(EXE) ./cmd/sn/main.go
 
 test:
 	go test ./pkg/jsondiff
 
 run:
-	go run ./cmd/main.go
+	go run ./cmd/sn/main.go
 run-c:
-	go run ./cmd/main.go c
+	go run ./cmd/sn/main.go c
 run-d:
-	go run ./cmd/main.go d
+	go run ./cmd/sn/main.go d
 run-h:
-	go run ./cmd/main.go h
+	go run ./cmd/sn/main.go h
 run-r:
-	go run ./cmd/main.go r
+	go run ./cmd/sn/main.go r
 run-u:
-	go run ./cmd/main.go u
+	go run ./cmd/sn/main.go u
 
 clean:
 	rm ./$(EXE)
