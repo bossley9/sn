@@ -17,11 +17,11 @@ func Run(arg string) {
 	case "c":
 		err = clear()
 	case "d":
-		err = downloadSync(false)
+		err = downloadSync()
 	case "h":
 		printUsage()
 	case "r":
-		err = downloadSync(true)
+		err = refetchSync()
 	case "u":
 		err = uploadSync()
 	default:
@@ -53,14 +53,18 @@ func printUsage() {
 	}
 }
 
-func openProjectDir() error {
+func initializeClient() (*c.Client, error) {
 	l.PrintInfo("Initializing client... ")
 	client, err := c.NewClient()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	l.PrintInfo("done.\n")
 
+	return client, nil
+}
+
+func authenticateAndConnect(client *c.Client) error {
 	l.PrintInfo("Authenticating with server... ")
 	if err := client.Authenticate(); err != nil {
 		return err
@@ -79,18 +83,10 @@ func openProjectDir() error {
 	}
 	l.PrintInfo("done.\n")
 
-	l.PrintInfo("Syncing client... ")
-	if err := client.Sync(); err != nil {
-		return err
-	}
-	client.Disconnect() // disconnect after sync to prevent timeout
-	l.PrintInfo("done.\n")
+	return nil
+}
 
-	// open project
-	if err := client.OpenProjectDir(); err != nil {
-		return err
-	}
-
+func uploadAvailableDiffs(client *c.Client) error {
 	l.PrintInfo("Searching for local diffs... ")
 	diffs := client.GetLocalDiffs()
 	if len(diffs) == 0 {
@@ -99,41 +95,51 @@ func openProjectDir() error {
 	}
 	l.PrintInfo("done.\n")
 
-	// reconnect after edits
-	l.PrintInfo("Authenticating with server... ")
-	if err := client.Authenticate(); err != nil {
-		return err
-	}
-	l.PrintInfo("done.\n")
-
-	l.PrintInfo("Connecting to socket... ")
-	if err := client.Connect(); err != nil {
+	if err := authenticateAndConnect(client); err != nil {
 		return err
 	}
 	defer client.Disconnect()
-	l.PrintInfo("done.\n")
-
-	l.PrintInfo("Accessing notes... ")
-	if err := client.OpenBucket("note"); err != nil {
-		return err
-	}
-	l.PrintInfo("done.\n")
 
 	l.PrintInfo("Uploading diffs... ")
 	if err := client.Upload(diffs); err != nil {
 		return err
 	}
 	l.PrintInfo("done.\n")
+
 	return nil
 }
 
-func clear() error {
-	l.PrintInfo("Initializing client... ")
-	client, err := c.NewClient()
+func openProjectDir() error {
+	client, err := initializeClient()
 	if err != nil {
 		return err
 	}
+
+	if err := authenticateAndConnect(client); err != nil {
+		return err
+	}
+
+	l.PrintInfo("Syncing client... ")
+	if err := client.Sync(); err != nil {
+		return err
+	}
 	l.PrintInfo("done.\n")
+
+	client.Disconnect() // disconnect after sync to prevent timeout
+
+	// open project
+	if err := client.OpenProjectDir(); err != nil {
+		return err
+	}
+
+	return uploadAvailableDiffs(client)
+}
+
+func clear() error {
+	client, err := initializeClient()
+	if err != nil {
+		return err
+	}
 
 	l.PrintInfo("Clearing data... ")
 	if err := client.Clear(); err != nil {
@@ -143,87 +149,50 @@ func clear() error {
 	return nil
 }
 
-func downloadSync(reset bool) error {
-	l.PrintInfo("Initializing client... ")
-	client, err := c.NewClient()
+func downloadSync() error {
+	client, err := initializeClient()
 	if err != nil {
 		return err
 	}
-	l.PrintInfo("done.\n")
 
-	l.PrintInfo("Authenticating with server... ")
-	if err := client.Authenticate(); err != nil {
-		return err
-	}
-	l.PrintInfo("done.\n")
-
-	l.PrintInfo("Connecting to socket... ")
-	if err := client.Connect(); err != nil {
+	if err := authenticateAndConnect(client); err != nil {
 		return err
 	}
 	defer client.Disconnect()
-	l.PrintInfo("done.\n")
 
-	l.PrintInfo("Accessing notes... ")
-	if err := client.OpenBucket("note"); err != nil {
+	l.PrintInfo("Syncing client... ")
+	if err := client.Sync(); err != nil {
 		return err
 	}
 	l.PrintInfo("done.\n")
 
-	if reset {
-		l.PrintInfo("Refetching... ")
-		if err := client.RefetchSync(); err != nil {
-			return err
-		}
-	} else {
-		l.PrintInfo("Syncing client... ")
-		if err := client.Sync(); err != nil {
-			return err
-		}
+	return nil
+}
+
+func refetchSync() error {
+	client, err := initializeClient()
+	if err != nil {
+		return err
+	}
+
+	if err := authenticateAndConnect(client); err != nil {
+		return err
+	}
+	defer client.Disconnect()
+
+	l.PrintInfo("Refetching... ")
+	if err := client.RefetchSync(); err != nil {
+		return err
 	}
 	l.PrintInfo("done.\n")
+
 	return nil
 }
 
 func uploadSync() error {
-	l.PrintInfo("Initializing client... ")
-	client, err := c.NewClient()
+	client, err := initializeClient()
 	if err != nil {
 		return err
 	}
-	l.PrintInfo("done.\n")
-
-	l.PrintInfo("Searching for local diffs... ")
-	diffs := client.GetLocalDiffs()
-	if len(diffs) == 0 {
-		l.PrintWarning("no local diffs found.\n")
-		return nil
-	}
-	l.PrintInfo("done.\n")
-
-	l.PrintInfo("Authenticating with server... ")
-	if err := client.Authenticate(); err != nil {
-		return err
-	}
-	l.PrintInfo("done.\n")
-
-	l.PrintInfo("Connecting to socket... ")
-	if err := client.Connect(); err != nil {
-		return err
-	}
-	defer client.Disconnect()
-	l.PrintInfo("done.\n")
-
-	l.PrintInfo("Accessing notes... ")
-	if err := client.OpenBucket("note"); err != nil {
-		return err
-	}
-	l.PrintInfo("done.\n")
-
-	l.PrintInfo("Uploading diffs... ")
-	if err := client.Upload(diffs); err != nil {
-		return err
-	}
-	l.PrintInfo("done.\n")
-	return nil
+	return uploadAvailableDiffs(client)
 }

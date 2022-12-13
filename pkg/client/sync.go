@@ -104,8 +104,8 @@ func (client *Client) updateSync() error {
 			l.PrintPlain(diff.Value + "\n")
 			// TODO display a richer diff for usability
 		}
-		l.PrintPlain("\n")
 		l.PrintWarning("Local diffs found. Please upload changes before syncing.\n")
+		l.PrintPlain("\n")
 		os.Exit(0)
 	}
 
