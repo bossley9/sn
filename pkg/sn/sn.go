@@ -1,29 +1,30 @@
 package sn
 
 import (
+	"context"
 	"os"
 
 	c "git.sr.ht/~bossley9/sn/pkg/client"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
-func Run(arg string) {
+func Run(arg string, ctx context.Context) {
 	l.PrintPlain("\n")
 	var err error
 
 	switch arg {
 	case "":
-		err = openProjectDir()
+		err = openProjectDir(ctx)
 	case "c":
 		err = clear()
 	case "d":
-		err = downloadSync()
+		err = downloadSync(ctx)
 	case "h":
 		printUsage()
 	case "r":
-		err = refetchSync()
+		err = refetchSync(ctx)
 	case "u":
-		err = uploadSync()
+		err = uploadSync(ctx)
 	default:
 		printUsage()
 	}
@@ -64,7 +65,7 @@ func initializeClient() (*c.Client, error) {
 	return client, nil
 }
 
-func authenticateAndConnect(client *c.Client) error {
+func authenticateAndConnect(client *c.Client, ctx context.Context) error {
 	l.PrintInfo("Authenticating with server... ")
 	if err := client.Authenticate(); err != nil {
 		return err
@@ -78,15 +79,25 @@ func authenticateAndConnect(client *c.Client) error {
 	l.PrintInfo("done.\n")
 
 	l.PrintInfo("Accessing notes... ")
-	if err := client.OpenBucket("note"); err != nil {
-		return err
+	const retryLimit = 3
+	for i := 1; i <= retryLimit; i++ {
+		err := client.OpenBucket("note", ctx)
+		if err == nil {
+			break
+		}
+		if i == retryLimit {
+			return err
+		}
+
+		l.PrintWarning(err)
+		l.PrintInfo("\nRetrying... ")
 	}
 	l.PrintInfo("done.\n")
 
 	return nil
 }
 
-func uploadAvailableDiffs(client *c.Client) error {
+func uploadAvailableDiffs(client *c.Client, ctx context.Context) error {
 	l.PrintInfo("Searching for local diffs... ")
 	diffs := client.GetLocalDiffs()
 	if len(diffs) == 0 {
@@ -95,7 +106,7 @@ func uploadAvailableDiffs(client *c.Client) error {
 	}
 	l.PrintInfo("done.\n")
 
-	if err := authenticateAndConnect(client); err != nil {
+	if err := authenticateAndConnect(client, ctx); err != nil {
 		return err
 	}
 	defer client.Disconnect()
@@ -109,13 +120,13 @@ func uploadAvailableDiffs(client *c.Client) error {
 	return nil
 }
 
-func openProjectDir() error {
+func openProjectDir(ctx context.Context) error {
 	client, err := initializeClient()
 	if err != nil {
 		return err
 	}
 
-	if err := authenticateAndConnect(client); err != nil {
+	if err := authenticateAndConnect(client, ctx); err != nil {
 		return err
 	}
 
@@ -132,7 +143,7 @@ func openProjectDir() error {
 		return err
 	}
 
-	return uploadAvailableDiffs(client)
+	return uploadAvailableDiffs(client, ctx)
 }
 
 func clear() error {
@@ -149,13 +160,13 @@ func clear() error {
 	return nil
 }
 
-func downloadSync() error {
+func downloadSync(ctx context.Context) error {
 	client, err := initializeClient()
 	if err != nil {
 		return err
 	}
 
-	if err := authenticateAndConnect(client); err != nil {
+	if err := authenticateAndConnect(client, ctx); err != nil {
 		return err
 	}
 	defer client.Disconnect()
@@ -169,13 +180,13 @@ func downloadSync() error {
 	return nil
 }
 
-func refetchSync() error {
+func refetchSync(ctx context.Context) error {
 	client, err := initializeClient()
 	if err != nil {
 		return err
 	}
 
-	if err := authenticateAndConnect(client); err != nil {
+	if err := authenticateAndConnect(client, ctx); err != nil {
 		return err
 	}
 	defer client.Disconnect()
@@ -189,10 +200,10 @@ func refetchSync() error {
 	return nil
 }
 
-func uploadSync() error {
+func uploadSync(ctx context.Context) error {
 	client, err := initializeClient()
 	if err != nil {
 		return err
 	}
-	return uploadAvailableDiffs(client)
+	return uploadAvailableDiffs(client, ctx)
 }

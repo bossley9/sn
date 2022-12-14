@@ -1,9 +1,12 @@
 package client
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"syscall"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"golang.org/x/term"
@@ -95,19 +98,34 @@ func (client *Client) Disconnect() error {
 }
 
 // authorize access to a given bucket
-func (client *Client) OpenBucket(bucketName string) error {
-	if err := client.simp.WriteInitMessage(0, client.cache.AuthToken, bucketName); err != nil {
-		return err
-	}
+func (client *Client) OpenBucket(bucketName string, ctx context.Context) error {
+	timedContext, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+	errChan := make(chan error)
 
-	// need to read two messages for some reason -
-	// this isn't in the Simperium documentation
-	if _, err := client.simp.ReadMessage(); err != nil {
-		return err
-	}
-	if _, err := client.simp.ReadMessage(); err != nil {
-		return err
-	}
+	go func() {
+		if err := client.simp.WriteInitMessage(0, client.cache.AuthToken, bucketName); err != nil {
+			errChan <- err
+		}
 
-	return nil
+		// need to read two messages for some reason -
+		// this isn't in the Simperium documentation
+		if _, err := client.simp.ReadMessage(); err != nil {
+			errChan <- err
+		}
+		if _, err := client.simp.ReadMessage(); err != nil {
+			errChan <- err
+		}
+
+		errChan <- nil
+	}()
+
+	for {
+		select {
+		case <-timedContext.Done():
+			return errors.New("bucket authorization timeout.")
+		case err := <-errChan:
+			return err
+		}
+	}
 }

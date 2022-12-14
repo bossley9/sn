@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	sn "git.sr.ht/~bossley9/sn/pkg/sn"
@@ -13,5 +14,7 @@ func main() {
 		arg = args[1]
 	}
 
-	sn.Run(arg)
+	ctx := context.Background()
+
+	sn.Run(arg, ctx)
 }
