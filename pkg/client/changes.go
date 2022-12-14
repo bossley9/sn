@@ -27,29 +27,28 @@ func (client *Client) applyChange(change *s.Change[NoteDiff]) {
 		l.PrintInfo("Creating note " + noteID + "... ")
 		if err := client.applyCreationChange(change); err != nil {
 			l.PrintError(err)
-			l.PrintWarning("\nUnable to create note " + noteID + ". Skipping...\n")
+			l.PrintWarning("\nUnable to create note " + noteID + ". Skipping...")
 		}
 	} else if change.Operation == j.OP_DELETE {
 		// note deletion
 		l.PrintInfo("Deleting note " + noteID + "... ")
 		if err := client.applyDeletionChange(change); err != nil {
 			l.PrintError(err)
-			l.PrintWarning("\nUnable to delete note " + noteID + ". Skipping...\n")
+			l.PrintWarning("\nUnable to delete note " + noteID + ". Skipping...")
 		}
 	} else if len(change.Values.Content.Value) > 0 {
 		// note update
 		l.PrintInfo("Updating note " + noteID + "... ")
 		if err := client.applyUpdateChange(change); err != nil {
 			l.PrintError(err)
-			l.PrintWarning("\nUnable to update note " + noteID + ". Skipping...\n")
+			l.PrintWarning("\nUnable to update note " + noteID + ". Skipping...")
 		}
 	} else {
-		// unimplemented change
-		l.PrintWarning("Unimplemented change to note " + noteID + ". Skipping...\n")
+		// silently ignore other changes such as pinning or toggling markdown
 	}
 
 	// update change version
-	l.PrintInfo("Updating change version from " + client.getCurrentVersion() + " to " + change.ChangeVersion + "... \n")
+	l.PrintInfo("\nUpdating change version from " + client.getCurrentVersion() + " to " + change.ChangeVersion + "... \n")
 	if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
 		l.PrintWarning("Unable to update current version. Skipping...\n")
 	}
