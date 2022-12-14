@@ -79,18 +79,8 @@ func authenticateAndConnect(client *c.Client, ctx context.Context) error {
 	l.PrintInfo("done.\n")
 
 	l.PrintInfo("Accessing notes... ")
-	const retryLimit = 3
-	for i := 1; i <= retryLimit; i++ {
-		err := client.OpenBucket("note", ctx)
-		if err == nil {
-			break
-		}
-		if i == retryLimit {
-			return err
-		}
-
-		l.PrintWarning(err)
-		l.PrintInfo("\nRetrying... ")
+	if err := client.OpenBucket("note", ctx); err != nil {
+		return err
 	}
 	l.PrintInfo("done.\n")
 

@@ -99,7 +99,7 @@ func (client *Client) Disconnect() error {
 
 // authorize access to a given bucket
 func (client *Client) OpenBucket(bucketName string, ctx context.Context) error {
-	timedContext, cancel := context.WithTimeout(ctx, time.Second*5)
+	timedContext, cancel := context.WithTimeout(ctx, time.Second*4)
 	defer cancel()
 	errChan := make(chan error)
 
