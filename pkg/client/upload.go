@@ -38,7 +38,15 @@ func (client *Client) Upload(diffs map[string]j.StringJSONDiff) error {
 		}
 		change := changes[0]
 		if ccid != change.ChangeIDs[0] || change.Error > 0 {
-			l.PrintError("error " + strconv.Itoa(change.Error))
+			// https://simperium.com/docs/websocket/#change-c
+			var errorMessage string
+			switch change.Error {
+			case 440:
+				errorMessage = "invalid diff. Try removing non-ascii or non-traditional characters"
+			default:
+				errorMessage = "internal server error"
+			}
+			l.PrintError("error " + strconv.Itoa(change.Error) + ": " + errorMessage + ".")
 			l.PrintWarning("\nUnable to upload changes to " + noteCache.Name + ". Continuing...\n")
 			continue
 		}
