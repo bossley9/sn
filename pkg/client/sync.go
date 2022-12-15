@@ -100,9 +100,19 @@ func (client *Client) updateSync() error {
 	diffs := client.GetLocalDiffs()
 	l.PrintPlain("\n")
 	if len(diffs) > 0 {
-		for _, diff := range diffs {
-			l.PrintPlain(diff.Value + "\n")
-			// TODO display a richer diff for usability
+		for noteID, diff := range diffs {
+			noteCache, err := client.getCachedNote(noteID)
+			if err != nil {
+				l.PrintWarning("Unable to read local file with id " + noteID + ". Continuing...\n")
+				continue
+			}
+			content, err := client.readVersionNote(noteID)
+			if err != nil {
+				l.PrintWarning("Unable to read local file with id " + noteID + ". Continuing...\n")
+				continue
+			}
+
+			diff.PrettyPrint(noteCache.Name, content)
 		}
 		l.PrintWarning("Local diffs found. Please upload changes before syncing.\n")
 		l.PrintPlain("\n")

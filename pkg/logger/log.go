@@ -25,6 +25,17 @@ func PrintError(a ...any) {
 	fmt.Print(NoColor)
 }
 
+func PrintDiffInsert(a ...any) {
+	fmt.Print(Green)
+	fmt.Print(a...)
+	fmt.Print(NoColor)
+}
+func PrintDiffDelete(a ...any) {
+	fmt.Print(Red)
+	fmt.Print(a...)
+	fmt.Print(NoColor)
+}
+
 func PrintDebug(a ...any) {
 	if !isProduction {
 		fmt.Print(Magenta)
