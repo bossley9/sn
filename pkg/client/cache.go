@@ -6,7 +6,6 @@ import (
 	"os"
 
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
-	ls "git.sr.ht/~bossley9/sn/pkg/localstorage"
 )
 
 type Cache struct {
@@ -20,19 +19,8 @@ type NoteCache struct {
 	Name    string `json:"n"`
 }
 
-func getCacheFile() (string, error) {
-	storage, err := ls.New("sn")
-	if err != nil {
-		return "", err
-	}
-	return storage.Filename, nil
-}
-
-func ReadCache() (*Cache, error) {
-	cacheFile, err := getCacheFile()
-	if err != nil {
-		return nil, err
-	}
+func ReadCache(client *Client) (*Cache, error) {
+	cacheFile := client.storage.Filename
 
 	file, err := os.ReadFile(cacheFile)
 	if err != nil {
@@ -48,10 +36,7 @@ func ReadCache() (*Cache, error) {
 }
 
 func (client *Client) writeCache() error {
-	cacheFile, err := getCacheFile()
-	if err != nil {
-		return err
-	}
+	cacheFile := client.storage.Filename
 
 	cacheContent, err := json.Marshal(client.cache)
 	if err != nil {

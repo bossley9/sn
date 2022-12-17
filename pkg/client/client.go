@@ -12,6 +12,7 @@ import (
 	"golang.org/x/term"
 
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
+	ls "git.sr.ht/~bossley9/sn/pkg/localstorage"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
@@ -22,10 +23,17 @@ type Client struct {
 	cache      *Cache
 	simp       *s.Client
 	connection *websocket.Conn
+	storage    *ls.LocalStorage
 }
 
 func NewClient() (*Client, error) {
 	c := Client{}
+
+	storage, err := ls.New("sn")
+	if err != nil {
+		return nil, err
+	}
+	c.storage = storage
 
 	// initializing project directory
 	home := os.Getenv("HOME")
@@ -38,7 +46,7 @@ func NewClient() (*Client, error) {
 	}
 
 	// reading cache
-	cache, err := ReadCache()
+	cache, err := ReadCache(&c) // assuming storage is initialized before cache
 	if err != nil {
 		l.PrintWarning("unable to parse cache. Continuing... ")
 		cache = &Cache{}
