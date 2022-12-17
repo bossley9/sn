@@ -7,6 +7,7 @@ import (
 type localStorage struct {
 	// TODO: make private when public read and write methods are created
 	Filename string
+	content  map[string][]byte
 }
 
 func New(name string) *localStorage {
@@ -14,6 +15,7 @@ func New(name string) *localStorage {
 
 	return &localStorage{
 		Filename: filename,
+		content:  map[string][]byte{},
 	}
 }
 
