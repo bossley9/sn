@@ -6,6 +6,7 @@ import (
 	"os"
 
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
+	ls "git.sr.ht/~bossley9/sn/pkg/localstorage"
 )
 
 type Cache struct {
@@ -20,11 +21,8 @@ type NoteCache struct {
 }
 
 func getCacheFile() string {
-	cacheDir := os.Getenv("XDG_CACHE_HOME")
-	if len(cacheDir) == 0 {
-		cacheDir = "."
-	}
-	return cacheDir + "/snrc.json"
+	storage := ls.New("sn")
+	return storage.Filename
 }
 
 func ReadCache() (*Cache, error) {
