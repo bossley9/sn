@@ -20,13 +20,19 @@ type NoteCache struct {
 	Name    string `json:"n"`
 }
 
-func getCacheFile() string {
-	storage := ls.New("sn")
-	return storage.Filename
+func getCacheFile() (string, error) {
+	storage, err := ls.New("sn")
+	if err != nil {
+		return "", err
+	}
+	return storage.Filename, nil
 }
 
 func ReadCache() (*Cache, error) {
-	cacheFile := getCacheFile()
+	cacheFile, err := getCacheFile()
+	if err != nil {
+		return nil, err
+	}
 
 	file, err := os.ReadFile(cacheFile)
 	if err != nil {
@@ -42,7 +48,10 @@ func ReadCache() (*Cache, error) {
 }
 
 func (client *Client) writeCache() error {
-	cacheFile := getCacheFile()
+	cacheFile, err := getCacheFile()
+	if err != nil {
+		return err
+	}
 
 	cacheContent, err := json.Marshal(client.cache)
 	if err != nil {

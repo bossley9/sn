@@ -2,21 +2,28 @@ package localstorage
 
 import (
 	"os"
+	"path/filepath"
+
+	f "git.sr.ht/~bossley9/sn/pkg/fileio"
 )
 
-type localStorage struct {
+type LocalStorage struct {
 	// TODO: make private when public read and write methods are created
 	Filename string
 	content  map[string][]byte
 }
 
-func New(name string) *localStorage {
+func New(name string) (*LocalStorage, error) {
 	filename := getStorageFilename(name)
 
-	return &localStorage{
+	if err := os.MkdirAll(filepath.Dir(filename), f.RWX); err != nil {
+		return nil, err
+	}
+
+	return &LocalStorage{
 		Filename: filename,
 		content:  map[string][]byte{},
-	}
+	}, nil
 }
 
 func getStorageFilename(name string) string {

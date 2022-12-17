@@ -15,7 +15,12 @@ func (client *Client) Clear() error {
 
 	// delete cache file
 	l.PrintInfo("deleting cache... ")
-	if err := os.Remove(getCacheFile()); err != nil {
+	cacheFile, err := getCacheFile()
+	if err != nil {
+		return err
+	}
+
+	if err := os.Remove(cacheFile); err != nil {
 		return err
 	}
 

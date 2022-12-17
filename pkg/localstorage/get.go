@@ -6,7 +6,7 @@ import (
 	"errors"
 )
 
-func (storage *localStorage) Get(key string, value interface{}) error {
+func (storage *LocalStorage) Get(key string, value interface{}) error {
 	storedValue := storage.content[key]
 	if storedValue == nil {
 		return errors.New("value for key '" + key + "' not found in storage.")
