@@ -18,7 +18,7 @@ type NoteCache struct {
 }
 
 func ReadCache(client *Client) (*Cache, error) {
-	cacheFile := client.storage.FilenameCompat
+	cacheFile := client.storage.filenameCompat
 
 	file, err := os.ReadFile(cacheFile)
 	if err != nil {
@@ -34,7 +34,7 @@ func ReadCache(client *Client) (*Cache, error) {
 }
 
 func (client *Client) writeCache() error {
-	cacheFile := client.storage.FilenameCompat
+	cacheFile := client.storage.filenameCompat
 
 	cacheContent, err := json.Marshal(client.cache)
 	if err != nil {
@@ -44,7 +44,7 @@ func (client *Client) writeCache() error {
 		return err
 	}
 
-	return nil
+	return client.storage.writeChanges()
 }
 
 func (client *Client) setNoteVersion(noteID string, version int) error {

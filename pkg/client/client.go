@@ -12,7 +12,6 @@ import (
 	"golang.org/x/term"
 
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
-	ls "git.sr.ht/~bossley9/sn/pkg/localstorage"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
@@ -23,13 +22,13 @@ type Client struct {
 	cache      *Cache
 	simp       *s.Client
 	connection *websocket.Conn
-	storage    *ls.LocalStorage
+	storage    *localStorage
 }
 
 func NewClient() (*Client, error) {
 	c := Client{}
 
-	storage, err := ls.New("sn")
+	storage, err := newLocalStorage("sn")
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +68,7 @@ func NewClient() (*Client, error) {
 
 // retrieve user authentication token
 func (client *Client) Authenticate() error {
-	var authToken string
-	client.storage.Get(AUTH_TOKEN, &authToken)
-	if len(authToken) > 0 {
+	if len(client.storage.AuthToken) > 0 {
 		return nil
 	}
 
@@ -93,7 +90,8 @@ func (client *Client) Authenticate() error {
 		return err
 	}
 
-	return client.storage.Set(AUTH_TOKEN, token)
+	client.storage.AuthToken = token
+	return nil
 }
 
 // connect to the server websocket
@@ -113,8 +111,7 @@ func (client *Client) OpenBucket(bucketName string, ctx context.Context) error {
 	errChan := make(chan error)
 
 	go func() {
-		var authToken string
-		client.storage.Get(AUTH_TOKEN, &authToken)
+		authToken := client.storage.AuthToken
 		if err := client.simp.WriteInitMessage(0, authToken, bucketName); err != nil {
 			errChan <- err
 		}

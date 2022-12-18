@@ -48,9 +48,7 @@ func (client *Client) applyChange(change *s.Change[NoteDiff]) {
 	}
 
 	l.PrintInfo("\nUpdating change version to " + change.ChangeVersion + "... \n")
-	if err := client.storage.Set(CHANGE_VERSION, change.ChangeVersion); err != nil {
-		l.PrintWarning("Unable to update current version. Skipping...\n")
-	}
+	client.storage.ChangeVersion = change.ChangeVersion
 }
 
 // given an update change, applies that change to the specified note

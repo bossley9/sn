@@ -11,9 +11,8 @@ import (
 
 // sync client notes
 func (client *Client) Sync() error {
-	var changeVersion string
-	err := client.storage.Get(CHANGE_VERSION, &changeVersion)
-	if err != nil || len(changeVersion) == 0 {
+	changeVersion := client.storage.ChangeVersion
+	if len(changeVersion) == 0 {
 		l.PrintWarning("Change version not found. Making fresh sync...")
 		return client.RefetchSync()
 	}
@@ -86,11 +85,8 @@ func (client *Client) RefetchSync() error {
 		}
 	}
 
-	if err := client.storage.Set(CHANGE_VERSION, version); err != nil {
-		return err
-	}
-
-	return nil
+	client.storage.ChangeVersion = version
+	return client.storage.writeChanges()
 }
 
 func (client *Client) updateSync() error {
@@ -117,10 +113,7 @@ func (client *Client) updateSync() error {
 		os.Exit(0)
 	}
 
-	var changeVersion string
-	if err := client.storage.Get(CHANGE_VERSION, &changeVersion); err != nil {
-		return err
-	}
+	changeVersion := client.storage.ChangeVersion
 	if err := client.simp.WriteChangeVersionMessage(0, changeVersion); err != nil {
 		return err
 	}
@@ -146,5 +139,5 @@ func (client *Client) updateSync() error {
 		client.applyChange(&change)
 	}
 
-	return nil
+	return client.storage.writeChanges()
 }

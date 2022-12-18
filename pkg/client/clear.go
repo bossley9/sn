@@ -15,9 +15,9 @@ func (client *Client) Clear() error {
 
 	// delete cache file
 	l.PrintInfo("deleting cache... ")
-	if err := os.Remove(client.storage.FilenameCompat); err != nil {
-		return err
-	}
+	// ignore error if file does not exist
+	os.Remove(client.storage.filenameCompat)
+	os.Remove(client.storage.filename)
 
 	return nil
 }
