@@ -19,7 +19,11 @@ func (client *Client) Upload(diffs map[string]j.StringJSONDiff) error {
 			continue
 		}
 
-		ccid, err := client.simp.WriteChangeMessage(0, client.getCurrentVersion(), noteCache.Version, noteID, "M", diff.Value)
+		var changeVersion string
+		if err := client.storage.Get(CHANGE_VERSION, &changeVersion); err != nil {
+			return err
+		}
+		ccid, err := client.simp.WriteChangeMessage(0, changeVersion, noteCache.Version, noteID, "M", diff.Value)
 		if err != nil {
 			l.PrintError(err)
 			l.PrintWarning("\nUnable to upload changes to " + noteCache.Name + ". Continuing...\n")
@@ -70,7 +74,7 @@ func (client *Client) Upload(diffs map[string]j.StringJSONDiff) error {
 			continue
 		}
 
-		if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
+		if err := client.storage.Set(CHANGE_VERSION, change.ChangeVersion); err != nil {
 			l.PrintWarning("Unable to update change version to " + change.ChangeVersion + ". Continuing...\n")
 			continue
 		}

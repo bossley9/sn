@@ -47,9 +47,8 @@ func (client *Client) applyChange(change *s.Change[NoteDiff]) {
 		// silently ignore other changes such as pinning or toggling markdown
 	}
 
-	// update change version
-	l.PrintInfo("\nUpdating change version from " + client.getCurrentVersion() + " to " + change.ChangeVersion + "... \n")
-	if err := client.setCurrentVersion(change.ChangeVersion); err != nil {
+	l.PrintInfo("\nUpdating change version to " + change.ChangeVersion + "... \n")
+	if err := client.storage.Set(CHANGE_VERSION, change.ChangeVersion); err != nil {
 		l.PrintWarning("Unable to update current version. Skipping...\n")
 	}
 }

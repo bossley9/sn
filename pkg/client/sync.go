@@ -11,21 +11,20 @@ import (
 
 // sync client notes
 func (client *Client) Sync() error {
-	currentVersion := client.getCurrentVersion()
-	if len(currentVersion) == 0 {
-		l.PrintWarning("no version found in cache. Making fresh sync...")
+	var changeVersion string
+	err := client.storage.Get(CHANGE_VERSION, &changeVersion)
+	if err != nil || len(changeVersion) == 0 {
+		l.PrintWarning("Change version not found. Making fresh sync...")
+		return client.RefetchSync()
+	}
+
+	l.PrintInfo("syncing from version " + changeVersion + "... ")
+	if err := client.updateSync(); err != nil {
+		l.PrintError(err)
+		l.PrintInfo("\n")
+		l.PrintWarning("Falling back to fresh sync... ")
 		if err := client.RefetchSync(); err != nil {
 			return err
-		}
-	} else {
-		l.PrintInfo("syncing from version " + currentVersion + "... ")
-		if err := client.updateSync(); err != nil {
-			l.PrintError(err)
-			l.PrintInfo("\n")
-			l.PrintWarning("Falling back to fresh sync... ")
-			if err := client.RefetchSync(); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -87,8 +86,7 @@ func (client *Client) RefetchSync() error {
 		}
 	}
 
-	// update current version
-	if err := client.setCurrentVersion(version); err != nil {
+	if err := client.storage.Set(CHANGE_VERSION, version); err != nil {
 		return err
 	}
 
@@ -119,7 +117,11 @@ func (client *Client) updateSync() error {
 		os.Exit(0)
 	}
 
-	if err := client.simp.WriteChangeVersionMessage(0, client.getCurrentVersion()); err != nil {
+	var changeVersion string
+	if err := client.storage.Get(CHANGE_VERSION, &changeVersion); err != nil {
+		return err
+	}
+	if err := client.simp.WriteChangeVersionMessage(0, changeVersion); err != nil {
 		return err
 	}
 	message, err := client.simp.ReadMessage()

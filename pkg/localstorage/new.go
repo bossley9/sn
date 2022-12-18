@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
+	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
 type LocalStorage struct {
@@ -39,7 +40,7 @@ func New(name string) (*LocalStorage, error) {
 	}
 
 	if err := storage.readFile(); err != nil {
-		return nil, err
+		l.PrintWarning("unable to parse local data. Continuing... ")
 	}
 
 	return &storage, nil
