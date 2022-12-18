@@ -9,8 +9,7 @@ import (
 )
 
 type Cache struct {
-	AuthToken string               `json:"t"`
-	Notes     map[string]NoteCache `json:"n"`
+	Notes map[string]NoteCache `json:"n"`
 }
 
 type NoteCache struct {
@@ -46,14 +45,6 @@ func (client *Client) writeCache() error {
 	}
 
 	return nil
-}
-
-func (client *Client) getToken() string {
-	return client.cache.AuthToken
-}
-func (client *Client) setToken(token string) error {
-	client.cache.AuthToken = token
-	return client.writeCache()
 }
 
 func (client *Client) setNoteVersion(noteID string, version int) error {

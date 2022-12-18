@@ -69,8 +69,9 @@ func NewClient() (*Client, error) {
 
 // retrieve user authentication token
 func (client *Client) Authenticate() error {
-	if len(client.getToken()) > 0 {
-		// found cached token
+	var authToken string
+	client.storage.Get(AUTH_TOKEN, &authToken)
+	if len(authToken) > 0 {
 		return nil
 	}
 
@@ -92,7 +93,7 @@ func (client *Client) Authenticate() error {
 		return err
 	}
 
-	return client.setToken(token)
+	return client.storage.Set(AUTH_TOKEN, token)
 }
 
 // connect to the server websocket
@@ -112,7 +113,9 @@ func (client *Client) OpenBucket(bucketName string, ctx context.Context) error {
 	errChan := make(chan error)
 
 	go func() {
-		if err := client.simp.WriteInitMessage(0, client.cache.AuthToken, bucketName); err != nil {
+		var authToken string
+		client.storage.Get(AUTH_TOKEN, &authToken)
+		if err := client.simp.WriteInitMessage(0, authToken, bucketName); err != nil {
 			errChan <- err
 		}
 
