@@ -20,7 +20,7 @@ type NoteCache struct {
 }
 
 func ReadCache(client *Client) (*Cache, error) {
-	cacheFile := client.storage.Filename
+	cacheFile := client.storage.FilenameCompat
 
 	file, err := os.ReadFile(cacheFile)
 	if err != nil {
@@ -36,7 +36,7 @@ func ReadCache(client *Client) (*Cache, error) {
 }
 
 func (client *Client) writeCache() error {
-	cacheFile := client.storage.Filename
+	cacheFile := client.storage.FilenameCompat
 
 	cacheContent, err := json.Marshal(client.cache)
 	if err != nil {

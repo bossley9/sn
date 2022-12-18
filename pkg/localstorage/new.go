@@ -8,9 +8,10 @@ import (
 )
 
 type LocalStorage struct {
-	// TODO: make private when public read and write methods are created
-	Filename string
+	filename string
 	content  map[string][]byte
+	// TODO remove when migrated off cache utils
+	FilenameCompat string
 }
 
 func New(name string) (*LocalStorage, error) {
@@ -20,9 +21,21 @@ func New(name string) (*LocalStorage, error) {
 		return nil, err
 	}
 
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		file, err := os.Create(filename)
+		if err != nil {
+			return nil, err
+		}
+		file.Close()
+	} else if err != nil {
+		return nil, err
+	}
+
 	return &LocalStorage{
-		Filename: filename,
-		content:  map[string][]byte{},
+		FilenameCompat: filename + "2",
+		filename:       filename,
+		content:        map[string][]byte{},
 	}, nil
 }
 
