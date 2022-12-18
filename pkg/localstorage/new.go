@@ -32,11 +32,17 @@ func New(name string) (*LocalStorage, error) {
 		return nil, err
 	}
 
-	return &LocalStorage{
+	storage := LocalStorage{
 		FilenameCompat: filename + "2",
 		filename:       filename,
 		content:        map[string][]byte{},
-	}, nil
+	}
+
+	if err := storage.readFile(); err != nil {
+		return nil, err
+	}
+
+	return &storage, nil
 }
 
 func getStorageFilename(name string) string {

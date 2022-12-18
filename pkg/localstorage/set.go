@@ -12,5 +12,5 @@ func (storage *LocalStorage) Set(key string, value interface{}) error {
 	}
 
 	storage.content[key] = buf.Bytes()
-	return nil
+	return storage.writeFile()
 }
