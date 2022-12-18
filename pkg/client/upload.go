@@ -76,5 +76,5 @@ func (client *Client) Upload(diffs map[string]j.StringJSONDiff) error {
 		l.PrintInfo("Change applied to " + noteCache.Name + ".\n")
 	}
 
-	return client.writeCache()
+	return client.storage.writeChanges()
 }

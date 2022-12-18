@@ -19,7 +19,6 @@ import (
 type Client struct {
 	projectDir string
 	versionDir string
-	cache      *Cache
 	simp       *s.Client
 	connection *websocket.Conn
 	storage    *localStorage
@@ -43,14 +42,6 @@ func NewClient() (*Client, error) {
 	if err := os.MkdirAll(c.projectDir, f.RWX); err != nil {
 		return nil, err
 	}
-
-	// reading cache
-	cache, err := ReadCache(&c) // assuming storage is initialized before cache
-	if err != nil {
-		l.PrintWarning("unable to parse cache. Continuing... ")
-		cache = &Cache{}
-	}
-	c.cache = cache
 
 	// initializing version control
 	// creating a directory within .git to automatically ignore version

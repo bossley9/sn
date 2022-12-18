@@ -9,10 +9,15 @@ import (
 )
 
 type localStorage struct {
-	filename       string
-	filenameCompat string
-	ChangeVersion  string `json:"cv"`
-	AuthToken      string `json:"at"`
+	filename      string
+	ChangeVersion string               `json:"cv"`
+	AuthToken     string               `json:"at"`
+	Notes         map[string]NoteCache `json:"ns"`
+}
+
+type NoteCache struct {
+	Version int    `json:"v"`
+	Name    string `json:"n"`
 }
 
 func newLocalStorage(name string) (*localStorage, error) {
@@ -43,7 +48,6 @@ func newLocalStorage(name string) (*localStorage, error) {
 	}
 
 	storage.filename = filename
-	storage.filenameCompat = filename + "2"
 
 	return &storage, nil
 }

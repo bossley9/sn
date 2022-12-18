@@ -105,7 +105,7 @@ func (client *Client) applyDeletionChange(change *s.Change[NoteDiff]) error {
 	}
 
 	// remove from cache
-	delete(client.cache.Notes, noteID)
+	delete(client.storage.Notes, noteID)
 
 	return nil
 }

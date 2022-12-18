@@ -9,7 +9,7 @@ import (
 
 func (client *Client) GetLocalDiffs() map[string]j.StringJSONDiff {
 	diffs := make(map[string]j.StringJSONDiff, 0)
-	notes := client.cache.Notes
+	notes := client.storage.Notes
 
 	if len(notes) == 0 {
 		return diffs
