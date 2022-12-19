@@ -1,13 +1,14 @@
 # sn
 
-A [Simplenote](https://simplenote.com) static-syncing CLI client written in Go
+A [Simplenote](https://simplenote.com) syncing CLI client written in Go
 
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [What this is not](#what-this-is-not)
-3. [Installation](#installation)
-4. [Usage](#usage)
+2. [Features](#features)
+3. [What this is not](#what-this-is-not)
+4. [Installation](#installation)
+5. [Usage](#usage)
 
 ## Introduction
 
@@ -17,18 +18,27 @@ I chose Simplenote because of its focus on simplicity. It is made for one purpos
 
 That's where this project comes in. The goal of this project is to readily download simplenote notes as text files and sync with edits to these files.
 
-The program works by using the Simperium websocket API to connect to Simplenote buckets and retrieve and upload data and changes.
+The program works by using the [Simperium websocket API](https://simperium.com/docs/websocket) to connect to Simplenote note buckets and retrieve and upload changes.
+
+## Features
+
+* Authenticate and download a user account's notes in markdown format
+* Upload changes to notes
+* Automatically open the notes directory with $EDITOR
+* Allow refetching for notes
+* Clear and delete all notes
 
 ## What this is not
 
-It is important to clarify that this syncing client is not:
+It is important to clarify that this Simplenote client is not:
 
-* a fully-fledged Simplenote CLI
-* an extendible library
+* an official Simplenote CLI
+* an extendible Simperium library
+* a real time note update system
 * a markdown converter
 * a websocket library
 
-This project is entirely made by me and for me. I don't plan on making this a general-purpose program or library, but I'm always open to suggestions and patches.
+This project is created entirely by me and for me. I don't intend to make this a general-use program but I'm always open to patches, and I welcome anyone who would like to use this project with me.
 
 ## Installation
 
@@ -39,8 +49,8 @@ make
 $ make install
 ```
 
-## Usage
+If you run NixOS you can use [this derivation from my dotfiles for reference](https://git.sr.ht/~bossley9/dotfiles/tree/1acf270192c09160b8a3c4a8f18b1007ce181f38/item/user/derivations/sn.nix).
 
-Sn has one primary function: to sync changes from the server and open the project directory with `$EDITOR`. Once the editor has closed, local modifications are uploaded to the server.
+## Usage
 
 Run `sn h` for more usage details.
