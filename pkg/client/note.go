@@ -7,6 +7,7 @@ import (
 	"git.sr.ht/~bossley9/gem/pkg/url"
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
+	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
 type NoteResponse struct {
@@ -28,11 +29,11 @@ type Note struct {
 	Name    string `json:"n"`
 }
 
-type NoteDiff struct {
+type NoteDiff s.Change[struct {
 	Content      j.StringJSONDiff  `json:"content"`
 	Deleted      j.BoolJSONDiff    `json:"deleted"`
 	CreationDate j.Float32JSONDiff `json:"creationDate"`
-}
+}]
 
 // given a note id and content string, returns a unique note name identifier
 func GetNoteName(noteID NoteID, content string) string {

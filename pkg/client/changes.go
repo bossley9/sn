@@ -7,12 +7,11 @@ import (
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
-	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
 
-func parseNoteChangeMessage(message string) (s.ChangeVersionResponse[NoteDiff], error) {
+func parseNoteChangeMessage(message string) ([]NoteDiff, error) {
 	response := message[4:]
-	var changes s.ChangeVersionResponse[NoteDiff]
+	var changes []NoteDiff
 	if err := json.Unmarshal([]byte(response), &changes); err != nil {
 		return nil, err
 	}
@@ -20,7 +19,7 @@ func parseNoteChangeMessage(message string) (s.ChangeVersionResponse[NoteDiff], 
 }
 
 // given any change, applies that change to the specified note
-func (client *Client) applyChange(change *s.Change[NoteDiff]) {
+func (client *Client) applyChange(change *NoteDiff) {
 	noteID := change.EntityID
 
 	if change.Values.CreationDate.Operation == j.OP_INSERT {
@@ -53,7 +52,7 @@ func (client *Client) applyChange(change *s.Change[NoteDiff]) {
 }
 
 // given an update change, applies that change to the specified note
-func (client *Client) applyUpdateChange(change *s.Change[NoteDiff]) error {
+func (client *Client) applyUpdateChange(change *NoteDiff) error {
 	noteID := NoteID(change.EntityID)
 
 	content, err := client.readNote(noteID)
@@ -77,7 +76,7 @@ func (client *Client) applyUpdateChange(change *s.Change[NoteDiff]) error {
 }
 
 // given a creation change, applies that change to the specified note
-func (client *Client) applyCreationChange(change *s.Change[NoteDiff]) error {
+func (client *Client) applyCreationChange(change *NoteDiff) error {
 	noteID := NoteID(change.EntityID)
 	content := change.Values.Content.Value
 	note := Note{
@@ -88,7 +87,7 @@ func (client *Client) applyCreationChange(change *s.Change[NoteDiff]) error {
 }
 
 // given a deletion change, deletes the specified note
-func (client *Client) applyDeletionChange(change *s.Change[NoteDiff]) error {
+func (client *Client) applyDeletionChange(change *NoteDiff) error {
 	noteID := NoteID(change.EntityID)
 	note, ok := client.storage.Notes[noteID]
 	if !ok {
