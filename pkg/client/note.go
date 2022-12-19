@@ -49,10 +49,6 @@ func (client *Client) getVersionFileName(noteName string) string {
 
 // given a note summary, writes the note to file and updates the cache and version if necessary
 func (client *Client) writeNote(summary *NoteSummary) error {
-	// check for note name from cache
-	if client.storage.Notes == nil {
-		client.storage.Notes = make(map[string]NoteCache)
-	}
 	noteName := ""
 	noteCache, ok := client.storage.Notes[summary.ID]
 	if ok {

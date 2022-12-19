@@ -57,6 +57,9 @@ func newLocalStorage(name string) (*localStorage, error) {
 	}
 
 	storage.filename = filename
+	if storage.Notes == nil {
+		storage.Notes = make(map[string]NoteCache)
+	}
 
 	return &storage, nil
 }

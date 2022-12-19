@@ -18,13 +18,11 @@ func (client *Client) Sync() error {
 	}
 
 	l.PrintInfo("syncing from version " + changeVersion + "... ")
-	if err := client.updateSync(); err != nil {
+	err := client.updateSync()
+	if err != nil {
 		l.PrintError(err)
-		l.PrintInfo("\n")
-		l.PrintWarning("Falling back to fresh sync... ")
-		if err := client.RefetchSync(); err != nil {
-			return err
-		}
+		l.PrintWarning("\nFalling back to fresh sync... ")
+		return client.RefetchSync()
 	}
 
 	return nil
@@ -32,14 +30,14 @@ func (client *Client) Sync() error {
 
 // initial sync to load (or reload) all notes
 func (client *Client) RefetchSync() error {
-	noteSummaries := make([]s.EntitySummary[Note], 0)
-	maxParallelNotes := 20
+	noteEntities := []s.EntitySummary[Note]{}
+	maxParallelNotes := 30
 
-	isFirstBatch := true
 	mark := ""
 	version := ""
 
-	// batch fetch notes
+	// first batch does not include mark
+	isFirstBatch := true
 	for len(mark) > 0 || isFirstBatch {
 		if len(mark) > 0 {
 			l.PrintInfo("\nFetching batch " + mark + "... ")
@@ -59,7 +57,7 @@ func (client *Client) RefetchSync() error {
 			return err
 		}
 
-		noteSummaries = append(noteSummaries, indexRes.Entities...)
+		noteEntities = append(noteEntities, indexRes.Entities...)
 		mark = indexRes.Mark
 
 		if isFirstBatch {
@@ -69,12 +67,12 @@ func (client *Client) RefetchSync() error {
 	}
 
 	// write notes
-	for _, summary := range noteSummaries {
+	for _, note := range noteEntities {
 		// reformat data
 		noteSummary := NoteSummary{
-			ID:      summary.ID,
-			Version: summary.Version,
-			Content: summary.Data.Content,
+			ID:      note.ID,
+			Version: note.Version,
+			Content: note.Data.Content,
 		}
 
 		if err := client.writeNote(&noteSummary); err != nil {
