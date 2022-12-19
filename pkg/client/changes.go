@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
@@ -89,17 +90,17 @@ func (client *Client) applyCreationChange(change *s.Change[NoteDiff]) error {
 // given a deletion change, deletes the specified note
 func (client *Client) applyDeletionChange(change *s.Change[NoteDiff]) error {
 	noteID := change.EntityID
-	noteCache, err := client.getCachedNote(noteID)
-	if err != nil {
-		return err
+	note, ok := client.storage.Notes[noteID]
+	if !ok {
+		return errors.New("note with id " + noteID + " does not exist")
 	}
 
 	// remove file
-	filename := client.getFileName(noteCache.Name)
+	filename := client.getFileName(note.Name)
 	if err := os.Remove(filename); err != nil {
 		return err
 	}
-	vFilename := client.getVersionFileName(noteCache.Name)
+	vFilename := client.getVersionFileName(note.Name)
 	if err := os.Remove(vFilename); err != nil {
 		return err
 	}

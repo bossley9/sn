@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"os"
 
 	"git.sr.ht/~bossley9/gem/pkg/url"
@@ -81,12 +82,12 @@ func (client *Client) writeNote(summary *NoteSummary) error {
 
 // given a note id, returns written content associated with that note
 func (client *Client) readNote(noteID string) (string, error) {
-	noteCache, err := client.getCachedNote(noteID)
-	if err != nil {
-		return "", err
+	note, ok := client.storage.Notes[noteID]
+	if !ok {
+		return "", errors.New("note with id " + noteID + " does not exist.")
 	}
 
-	filename := client.getFileName(noteCache.Name)
+	filename := client.getFileName(note.Name)
 	content, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
@@ -96,12 +97,12 @@ func (client *Client) readNote(noteID string) (string, error) {
 }
 
 func (client *Client) readVersionNote(noteID string) (string, error) {
-	noteCache, err := client.getCachedNote(noteID)
-	if err != nil {
-		return "", err
+	note, ok := client.storage.Notes[noteID]
+	if !ok {
+		return "", errors.New("note with id " + noteID + " does not exist.")
 	}
 
-	filename := client.getVersionFileName(noteCache.Name)
+	filename := client.getVersionFileName(note.Name)
 	content, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
