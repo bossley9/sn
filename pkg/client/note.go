@@ -28,12 +28,6 @@ type Note struct {
 	Name    string `json:"n"`
 }
 
-type NoteSummary struct {
-	ID      NoteID
-	Version int
-	Content string
-}
-
 type NoteDiff struct {
 	Content      j.StringJSONDiff  `json:"content"`
 	Deleted      j.BoolJSONDiff    `json:"deleted"`
@@ -55,30 +49,20 @@ func (client *Client) getVersionFileName(noteName string) string {
 	return client.versionDir + "/" + noteName + ".md"
 }
 
-// given a note summary, writes the note to file and updates the cache and version if necessary
-func (client *Client) writeNote(summary *NoteSummary) error {
-	noteName := ""
-	note, ok := client.storage.Notes[summary.ID]
-	if ok {
-		noteName = note.Name
-	} else {
-		noteName = GetNoteName(summary.ID, summary.Content)
-	}
-
+func (client *Client) writeNote(noteID NoteID, note *Note, content string) error {
 	// write note to file
-	filename := client.getFileName(noteName)
-	if err := os.WriteFile(filename, []byte(summary.Content), f.RW); err != nil {
+	filename := client.getFileName(note.Name)
+	if err := os.WriteFile(filename, []byte(content), f.RW); err != nil {
 		return err
 	}
-	vFilename := client.getVersionFileName(noteName)
-	if err := os.WriteFile(vFilename, []byte(summary.Content), f.RW); err != nil {
+	vFilename := client.getVersionFileName(note.Name)
+	if err := os.WriteFile(vFilename, []byte(content), f.RW); err != nil {
 		return err
 	}
 
-	// update cache
-	client.storage.Notes[summary.ID] = Note{
-		Version: summary.Version,
-		Name:    noteName,
+	client.storage.Notes[noteID] = Note{
+		Version: note.Version,
+		Name:    note.Name,
 	}
 
 	return nil

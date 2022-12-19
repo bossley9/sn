@@ -67,13 +67,15 @@ func (client *Client) RefetchSync() error {
 	}
 
 	for _, noteResponse := range noteEntities {
-		noteSummary := NoteSummary{
-			ID:      NoteID(noteResponse.ID),
+		noteID := NoteID(noteResponse.ID)
+		content := noteResponse.Data.Content
+
+		note := Note{
 			Version: noteResponse.Version,
-			Content: noteResponse.Data.Content,
+			Name:    GetNoteName(noteID, content),
 		}
 
-		if err := client.writeNote(&noteSummary); err != nil {
+		if err := client.writeNote(noteID, &note, noteResponse.Data.Content); err != nil {
 			l.PrintWarning("Warning: ")
 			l.PrintWarning(err)
 			l.PrintPlain("\n")

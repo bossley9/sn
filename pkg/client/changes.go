@@ -62,15 +62,14 @@ func (client *Client) applyUpdateChange(change *s.Change[NoteDiff]) error {
 	}
 
 	l.PrintInfo("Applying change " + change.ChangeVersion + " to note " + string(noteID) + "... ")
-	result := change.Values.Content.Apply(content)
+	modifiedContent := change.Values.Content.Apply(content)
 
 	l.PrintInfo("writing changes... ")
-	noteSummary := NoteSummary{
-		ID:      noteID,
+	note := Note{
 		Version: change.EndVersion,
-		Content: result,
+		Name:    GetNoteName(noteID, modifiedContent),
 	}
-	if err := client.writeNote(&noteSummary); err != nil {
+	if err := client.writeNote(noteID, &note, modifiedContent); err != nil {
 		return err
 	}
 
@@ -79,12 +78,13 @@ func (client *Client) applyUpdateChange(change *s.Change[NoteDiff]) error {
 
 // given a creation change, applies that change to the specified note
 func (client *Client) applyCreationChange(change *s.Change[NoteDiff]) error {
-	summary := NoteSummary{
-		ID:      NoteID(change.EntityID),
+	noteID := NoteID(change.EntityID)
+	content := change.Values.Content.Value
+	note := Note{
 		Version: change.EndVersion,
-		Content: change.Values.Content.Value,
+		Name:    GetNoteName(noteID, content),
 	}
-	return client.writeNote(&summary)
+	return client.writeNote(noteID, &note, content)
 }
 
 // given a deletion change, deletes the specified note
