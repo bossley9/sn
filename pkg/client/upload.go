@@ -12,24 +12,23 @@ import (
 // upload and sync local diffs with server
 func (client *Client) Upload(diffs map[string]j.StringJSONDiff) error {
 	for noteID, diff := range diffs {
-		noteCache, err := client.getCachedNote(noteID)
-		if err != nil {
-			l.PrintError(err)
+		note, ok := client.storage.Notes[noteID]
+		if !ok {
 			l.PrintWarning("\nUnable to find note with id " + noteID + " in cache. Continuing...\n")
 			continue
 		}
 
 		changeVersion := client.storage.ChangeVersion
-		ccid, err := client.simp.WriteChangeMessage(0, changeVersion, noteCache.Version, noteID, "M", diff.Value)
+		ccid, err := client.simp.WriteChangeMessage(0, changeVersion, note.Version, noteID, "M", diff.Value)
 		if err != nil {
 			l.PrintError(err)
-			l.PrintWarning("\nUnable to upload changes to " + noteCache.Name + ". Continuing...\n")
+			l.PrintWarning("\nUnable to upload changes to " + note.Name + ". Continuing...\n")
 			continue
 		}
 		message, err := client.simp.ReadMessage()
 		if err != nil {
 			l.PrintError(err)
-			l.PrintWarning("\nUnable to upload changes to " + noteCache.Name + ". Continuing...\n")
+			l.PrintWarning("\nUnable to upload changes to " + note.Name + ". Continuing...\n")
 			continue
 		}
 
@@ -48,32 +47,30 @@ func (client *Client) Upload(diffs map[string]j.StringJSONDiff) error {
 				errorMessage = "internal server error"
 			}
 			l.PrintError("error " + strconv.Itoa(change.Error) + ": " + errorMessage + ".")
-			l.PrintWarning("\nUnable to upload changes to " + noteCache.Name + ". Continuing...\n")
+			l.PrintWarning("\nUnable to upload changes to " + note.Name + ". Continuing...\n")
 			continue
 		}
 
 		// applying changes
 		// since changes are already applied locally, just copy over
-		filename := client.getFileName(noteCache.Name)
+		filename := client.getFileName(note.Name)
 		raw, err := os.ReadFile(filename)
 		if err != nil {
-			l.PrintWarning("Unable to open note " + noteCache.Name + ". Continuing...\n")
+			l.PrintWarning("Unable to open note " + note.Name + ". Continuing...\n")
 			continue
 		}
-		vFilename := client.getVersionFileName(noteCache.Name)
+		vFilename := client.getVersionFileName(note.Name)
 		if err := os.WriteFile(vFilename, raw, f.RW); err != nil {
-			l.PrintWarning("Unable to writing version changes for note " + noteCache.Name + ". Continuing...\n")
+			l.PrintWarning("Unable to writing version changes for note " + note.Name + ". Continuing...\n")
 			continue
 		}
 
-		if err := client.setNoteVersion(noteID, change.EndVersion); err != nil {
-			l.PrintWarning("Unable to update note version to " + strconv.Itoa(change.EndVersion) + ". Continuing...\n")
-			continue
-		}
+		note.Version = change.EndVersion
 
+		client.storage.Notes[noteID] = note
 		client.storage.ChangeVersion = change.ChangeVersion
 
-		l.PrintInfo("Change applied to " + noteCache.Name + ".\n")
+		l.PrintInfo("Change applied to " + note.Name + ".\n")
 	}
 
 	return client.storage.writeChanges()
