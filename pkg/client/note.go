@@ -9,7 +9,7 @@ import (
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 )
 
-type Note struct {
+type NoteResponse struct {
 	Tags           []string `json:"tags"`
 	Deleted        bool     `json:"deleted"`
 	ShareURL       string   `json:"shareURL"`
@@ -20,8 +20,16 @@ type Note struct {
 	CreationDate   float32  `json:"creationDate"`
 }
 
+type NoteID string
+
+type Note struct {
+	// do not store ID, it will be used as the map key
+	Version int    `json:"v"`
+	Name    string `json:"n"`
+}
+
 type NoteSummary struct {
-	ID      string
+	ID      NoteID
 	Version int
 	Content string
 }
@@ -33,8 +41,8 @@ type NoteDiff struct {
 }
 
 // given a note id and content string, returns a unique note name identifier
-func GetNoteName(noteID string, content string) string {
-	return url.GenerateID(content) + "-" + noteID
+func GetNoteName(noteID NoteID, content string) string {
+	return url.GenerateID(content) + "-" + string(noteID)
 }
 
 // given a note name, returns an absolute path filename
@@ -50,9 +58,9 @@ func (client *Client) getVersionFileName(noteName string) string {
 // given a note summary, writes the note to file and updates the cache and version if necessary
 func (client *Client) writeNote(summary *NoteSummary) error {
 	noteName := ""
-	noteCache, ok := client.storage.Notes[summary.ID]
+	note, ok := client.storage.Notes[summary.ID]
 	if ok {
-		noteName = noteCache.Name
+		noteName = note.Name
 	} else {
 		noteName = GetNoteName(summary.ID, summary.Content)
 	}
@@ -68,7 +76,7 @@ func (client *Client) writeNote(summary *NoteSummary) error {
 	}
 
 	// update cache
-	client.storage.Notes[summary.ID] = NoteCache{
+	client.storage.Notes[summary.ID] = Note{
 		Version: summary.Version,
 		Name:    noteName,
 	}
@@ -77,10 +85,10 @@ func (client *Client) writeNote(summary *NoteSummary) error {
 }
 
 // given a note id, returns written content associated with that note
-func (client *Client) readNote(noteID string) (string, error) {
+func (client *Client) readNote(noteID NoteID) (string, error) {
 	note, ok := client.storage.Notes[noteID]
 	if !ok {
-		return "", errors.New("note with id " + noteID + " does not exist.")
+		return "", errors.New("note with id " + string(noteID) + " does not exist.")
 	}
 
 	filename := client.getFileName(note.Name)
@@ -92,10 +100,10 @@ func (client *Client) readNote(noteID string) (string, error) {
 	return string(content), nil
 }
 
-func (client *Client) readVersionNote(noteID string) (string, error) {
+func (client *Client) readVersionNote(noteID NoteID) (string, error) {
 	note, ok := client.storage.Notes[noteID]
 	if !ok {
-		return "", errors.New("note with id " + noteID + " does not exist.")
+		return "", errors.New("note with id " + string(noteID) + " does not exist.")
 	}
 
 	filename := client.getVersionFileName(note.Name)

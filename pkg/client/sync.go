@@ -30,7 +30,7 @@ func (client *Client) Sync() error {
 
 // initial sync to load (or reload) all notes
 func (client *Client) RefetchSync() error {
-	noteEntities := []s.EntitySummary[Note]{}
+	noteEntities := []s.EntitySummary[NoteResponse]{}
 	maxParallelNotes := 30
 
 	mark := ""
@@ -52,7 +52,7 @@ func (client *Client) RefetchSync() error {
 		if err != nil {
 			return err
 		}
-		var indexRes s.IndexMessageResponse[Note]
+		var indexRes s.IndexMessageResponse[NoteResponse]
 		if err := json.Unmarshal([]byte(message[4:]), &indexRes); err != nil {
 			return err
 		}
@@ -66,13 +66,11 @@ func (client *Client) RefetchSync() error {
 		}
 	}
 
-	// write notes
-	for _, note := range noteEntities {
-		// reformat data
+	for _, noteResponse := range noteEntities {
 		noteSummary := NoteSummary{
-			ID:      note.ID,
-			Version: note.Version,
-			Content: note.Data.Content,
+			ID:      NoteID(noteResponse.ID),
+			Version: noteResponse.Version,
+			Content: noteResponse.Data.Content,
 		}
 
 		if err := client.writeNote(&noteSummary); err != nil {

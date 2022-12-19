@@ -10,14 +10,9 @@ import (
 
 type localStorage struct {
 	filename      string
-	ChangeVersion string               `json:"cv"`
-	AuthToken     string               `json:"at"`
-	Notes         map[string]NoteCache `json:"ns"`
-}
-
-type NoteCache struct {
-	Version int    `json:"v"`
-	Name    string `json:"n"`
+	ChangeVersion string          `json:"cv"`
+	AuthToken     string          `json:"at"`
+	Notes         map[NoteID]Note `json:"ns"`
 }
 
 func newLocalStorage(name string) (*localStorage, error) {
@@ -58,7 +53,7 @@ func newLocalStorage(name string) (*localStorage, error) {
 
 	storage.filename = filename
 	if storage.Notes == nil {
-		storage.Notes = make(map[string]NoteCache)
+		storage.Notes = make(map[NoteID]Note)
 	}
 
 	return &storage, nil

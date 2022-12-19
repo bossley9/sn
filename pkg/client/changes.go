@@ -54,15 +54,15 @@ func (client *Client) applyChange(change *s.Change[NoteDiff]) {
 
 // given an update change, applies that change to the specified note
 func (client *Client) applyUpdateChange(change *s.Change[NoteDiff]) error {
-	noteID := change.EntityID
+	noteID := NoteID(change.EntityID)
 
 	content, err := client.readNote(noteID)
 	if err != nil {
 		return err
 	}
 
-	l.PrintInfo("Applying change " + change.ChangeVersion + " to note " + noteID + "... ")
-	result := change.Values.Content.Apply(string(content))
+	l.PrintInfo("Applying change " + change.ChangeVersion + " to note " + string(noteID) + "... ")
+	result := change.Values.Content.Apply(content)
 
 	l.PrintInfo("writing changes... ")
 	noteSummary := NoteSummary{
@@ -80,7 +80,7 @@ func (client *Client) applyUpdateChange(change *s.Change[NoteDiff]) error {
 // given a creation change, applies that change to the specified note
 func (client *Client) applyCreationChange(change *s.Change[NoteDiff]) error {
 	summary := NoteSummary{
-		ID:      change.EntityID,
+		ID:      NoteID(change.EntityID),
 		Version: change.EndVersion,
 		Content: change.Values.Content.Value,
 	}
@@ -89,10 +89,10 @@ func (client *Client) applyCreationChange(change *s.Change[NoteDiff]) error {
 
 // given a deletion change, deletes the specified note
 func (client *Client) applyDeletionChange(change *s.Change[NoteDiff]) error {
-	noteID := change.EntityID
+	noteID := NoteID(change.EntityID)
 	note, ok := client.storage.Notes[noteID]
 	if !ok {
-		return errors.New("note with id " + noteID + " does not exist")
+		return errors.New("note with id " + string(noteID) + " does not exist")
 	}
 
 	// remove file

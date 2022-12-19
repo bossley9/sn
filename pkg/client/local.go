@@ -7,17 +7,17 @@ import (
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
-func (client *Client) GetLocalDiffs() map[string]j.StringJSONDiff {
-	diffs := make(map[string]j.StringJSONDiff, 0)
+func (client *Client) GetLocalDiffs() map[NoteID]j.StringJSONDiff {
+	diffs := make(map[NoteID]j.StringJSONDiff, 0)
 	notes := client.storage.Notes
 
 	if len(notes) == 0 {
 		return diffs
 	}
 
-	for noteID, noteCache := range notes {
-		filename := client.getFileName(noteCache.Name)
-		vFilename := client.getVersionFileName(noteCache.Name)
+	for noteID, note := range notes {
+		filename := client.getFileName(note.Name)
+		vFilename := client.getVersionFileName(note.Name)
 		s1, err := os.ReadFile(vFilename)
 		if err != nil {
 			l.PrintWarning("unable to read file " + vFilename + " for versioning. Skipping...\n")
@@ -34,7 +34,7 @@ func (client *Client) GetLocalDiffs() map[string]j.StringJSONDiff {
 			continue // no diff found
 		}
 
-		l.PrintInfo("\nLocal diff found for " + noteCache.Name + ".")
+		l.PrintInfo("\nLocal diff found for " + note.Name + ".")
 
 		diffs[noteID] = diff
 	}
