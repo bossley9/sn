@@ -21,7 +21,16 @@ type NoteCache struct {
 }
 
 func newLocalStorage(name string) (*localStorage, error) {
-	filename := getLocalStorageFilename(name)
+	storageDir := os.Getenv("XDG_DATA_HOME")
+	if len(storageDir) == 0 {
+		homeDir := os.Getenv("HOME")
+		if len(homeDir) > 0 {
+			storageDir = homeDir + "/.local/share"
+		} else {
+			storageDir = "~/.local/share"
+		}
+	}
+	filename := storageDir + "/" + name + ".json"
 
 	if err := os.MkdirAll(filepath.Dir(filename), f.RWX); err != nil {
 		return nil, err
@@ -50,19 +59,6 @@ func newLocalStorage(name string) (*localStorage, error) {
 	storage.filename = filename
 
 	return &storage, nil
-}
-
-func getLocalStorageFilename(name string) string {
-	storageDir := os.Getenv("XDG_DATA_HOME")
-	if len(storageDir) == 0 {
-		homeDir := os.Getenv("HOME")
-		if len(homeDir) > 0 {
-			storageDir = homeDir + "/.local/share"
-		} else {
-			storageDir = "~/.local/share"
-		}
-	}
-	return storageDir + "/" + name + ".json"
 }
 
 func (storage *localStorage) writeChanges() error {
