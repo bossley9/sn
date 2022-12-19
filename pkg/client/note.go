@@ -77,7 +77,7 @@ func (client *Client) writeNote(summary *NoteSummary) error {
 		Name:    noteName,
 	}
 
-	return client.storage.writeChanges()
+	return nil
 }
 
 // given a note id, returns written content associated with that note
