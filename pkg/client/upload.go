@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"os"
 	"strconv"
 
@@ -10,7 +11,7 @@ import (
 )
 
 // upload and sync local diffs with server
-func (client *Client) Upload(diffs map[NoteID]j.StringJSONDiff) error {
+func (client *Client) Upload(ctx context.Context, diffs map[NoteID]j.StringJSONDiff) error {
 	for noteID, diff := range diffs {
 		note, ok := client.storage.Notes[noteID]
 		if !ok {
@@ -19,13 +20,13 @@ func (client *Client) Upload(diffs map[NoteID]j.StringJSONDiff) error {
 		}
 
 		changeVersion := client.storage.ChangeVersion
-		ccid, err := client.simp.WriteChangeMessage(0, changeVersion, note.Version, string(noteID), "M", diff.Value)
+		ccid, err := client.simp.WriteChangeMessage(ctx, 0, changeVersion, note.Version, string(noteID), "M", diff.Value)
 		if err != nil {
 			l.PrintError(err)
 			l.PrintWarning("\nUnable to upload changes to " + note.Name + ". Continuing...\n")
 			continue
 		}
-		message, err := client.simp.ReadMessage()
+		message, err := client.simp.ReadMessage(ctx)
 		if err != nil {
 			l.PrintError(err)
 			l.PrintWarning("\nUnable to upload changes to " + note.Name + ". Continuing...\n")

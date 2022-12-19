@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"golang.org/x/term"
+	"nhooyr.io/websocket"
 
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
@@ -86,8 +86,8 @@ func (client *Client) Authenticate() error {
 }
 
 // connect to the server websocket
-func (client *Client) Connect() error {
-	return client.simp.ConnectToSocket()
+func (client *Client) Connect(ctx context.Context) error {
+	return client.simp.ConnectToSocket(ctx)
 }
 
 // disconnect from the server websocket
@@ -103,16 +103,16 @@ func (client *Client) OpenBucket(bucketName string, ctx context.Context) error {
 
 	go func() {
 		authToken := client.storage.AuthToken
-		if err := client.simp.WriteInitMessage(0, authToken, bucketName); err != nil {
+		if err := client.simp.WriteInitMessage(timedContext, 0, authToken, bucketName); err != nil {
 			errChan <- err
 		}
 
 		// need to read two messages for some reason -
 		// this isn't in the Simperium documentation
-		if _, err := client.simp.ReadMessage(); err != nil {
+		if _, err := client.simp.ReadMessage(timedContext); err != nil {
 			errChan <- err
 		}
-		if _, err := client.simp.ReadMessage(); err != nil {
+		if _, err := client.simp.ReadMessage(timedContext); err != nil {
 			errChan <- err
 		}
 

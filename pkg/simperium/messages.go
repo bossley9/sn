@@ -1,13 +1,15 @@
 package simperium
 
 import (
+	"context"
+
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
 )
 
-func writeMessage(conn *websocket.Conn, messageType int, message string) error {
-	if err := conn.WriteMessage(messageType, []byte(message)); err != nil {
+func writeMessage(ctx context.Context, conn *websocket.Conn, messageType websocket.MessageType, message string) error {
+	if err := conn.Write(ctx, messageType, []byte(message)); err != nil {
 		return err
 	}
 	l.PrintDebug("\n" + "W " + message + "\n")
@@ -15,8 +17,8 @@ func writeMessage(conn *websocket.Conn, messageType int, message string) error {
 	return nil
 }
 
-func readMessage(conn *websocket.Conn) (int, string, error) {
-	mtype, raw, err := conn.ReadMessage()
+func readMessage(ctx context.Context, conn *websocket.Conn) (websocket.MessageType, string, error) {
+	mtype, raw, err := conn.Read(ctx)
 	if err != nil {
 		return 0, "", err
 	}
@@ -26,8 +28,8 @@ func readMessage(conn *websocket.Conn) (int, string, error) {
 	return mtype, message, nil
 }
 
-func (client *Client) ReadMessage() (string, error) {
-	_, message, err := readMessage(client.connection)
+func (client *Client) ReadMessage(ctx context.Context) (string, error) {
+	_, message, err := readMessage(ctx, client.connection)
 	if err != nil {
 		return "", err
 	}

@@ -1,10 +1,11 @@
 package simperium
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
 )
 
 type InitMessage struct {
@@ -17,7 +18,7 @@ type InitMessage struct {
 	Version    string `json:"version"`
 }
 
-func (client *Client) WriteInitMessage(channel int, token string, bucketName string) error {
+func (client *Client) WriteInitMessage(ctx context.Context, channel int, token string, bucketName string) error {
 	messageJson := InitMessage{
 		ClientID:   client.clientID,
 		API:        client.apiVersion,
@@ -35,7 +36,7 @@ func (client *Client) WriteInitMessage(channel int, token string, bucketName str
 
 	message := strconv.Itoa(channel) + ":init:" + string(messageBytes)
 
-	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
+	if err := writeMessage(ctx, client.connection, websocket.MessageText, message); err != nil {
 		return err
 	}
 

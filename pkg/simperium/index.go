@@ -1,9 +1,10 @@
 package simperium
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
 )
 
 type IndexMessageResponse[T any] struct {
@@ -18,7 +19,7 @@ type EntitySummary[T any] struct {
 	Data    T      `json:"d,omitempty"`
 }
 
-func (client *Client) WriteIndexMessage(channel int, returnData bool, offset string, mark string, limit int) error {
+func (client *Client) WriteIndexMessage(ctx context.Context, channel int, returnData bool, offset string, mark string, limit int) error {
 	message := strconv.Itoa(channel) + ":i:"
 
 	if returnData {
@@ -39,7 +40,7 @@ func (client *Client) WriteIndexMessage(channel int, returnData bool, offset str
 	// limit is 0-indexed
 	message = message + strconv.Itoa(limit-1)
 
-	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
+	if err := writeMessage(ctx, client.connection, websocket.MessageText, message); err != nil {
 		return err
 	}
 

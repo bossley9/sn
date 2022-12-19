@@ -73,7 +73,7 @@ func authenticateAndConnect(client *c.Client, ctx context.Context) error {
 	l.PrintInfo("done.\n")
 
 	l.PrintInfo("Connecting to socket... ")
-	if err := client.Connect(); err != nil {
+	if err := client.Connect(ctx); err != nil {
 		return err
 	}
 	l.PrintInfo("done.\n")
@@ -102,7 +102,7 @@ func uploadAvailableDiffs(client *c.Client, ctx context.Context) error {
 	defer client.Disconnect()
 
 	l.PrintInfo("Uploading diffs... ")
-	if err := client.Upload(diffs); err != nil {
+	if err := client.Upload(ctx, diffs); err != nil {
 		return err
 	}
 	l.PrintInfo("done.\n")
@@ -121,7 +121,7 @@ func openProjectDir(ctx context.Context) error {
 	}
 
 	l.PrintInfo("Syncing client... ")
-	if err := client.Sync(); err != nil {
+	if err := client.Sync(ctx); err != nil {
 		return err
 	}
 	l.PrintInfo("done.\n")
@@ -162,7 +162,7 @@ func downloadSync(ctx context.Context) error {
 	defer client.Disconnect()
 
 	l.PrintInfo("Syncing client... ")
-	if err := client.Sync(); err != nil {
+	if err := client.Sync(ctx); err != nil {
 		return err
 	}
 	l.PrintInfo("done.\n")
@@ -182,7 +182,7 @@ func refetchSync(ctx context.Context) error {
 	defer client.Disconnect()
 
 	l.PrintInfo("Refetching... ")
-	if err := client.RefetchSync(); err != nil {
+	if err := client.RefetchSync(ctx); err != nil {
 		return err
 	}
 	l.PrintInfo("done.\n")

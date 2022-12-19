@@ -1,14 +1,15 @@
 package simperium
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 	"time"
 
-	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
-
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
+
+	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 )
 
 type Change[T any] struct {
@@ -37,7 +38,7 @@ type UploadDiff struct {
 	ModificationDate j.Int64JSONDiff  `json:"modificationDate"`
 }
 
-func (client *Client) WriteChangeMessage(channel int, changeVersion string, entityVersion int, entityID string, operation string, textDiff string) (string, error) {
+func (client *Client) WriteChangeMessage(ctx context.Context, channel int, changeVersion string, entityVersion int, entityID string, operation string, textDiff string) (string, error) {
 	ccid := uuid.New().String()
 	contentDiff := UploadDiff{
 		Content: j.StringJSONDiff{
@@ -63,7 +64,7 @@ func (client *Client) WriteChangeMessage(channel int, changeVersion string, enti
 	}
 
 	message := strconv.Itoa(channel) + ":c:" + string(changeMsg)
-	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
+	if err := writeMessage(ctx, client.connection, websocket.MessageText, message); err != nil {
 		return "", err
 	}
 	return ccid, nil

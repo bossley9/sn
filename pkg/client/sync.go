@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
@@ -10,26 +11,26 @@ import (
 )
 
 // sync client notes
-func (client *Client) Sync() error {
+func (client *Client) Sync(ctx context.Context) error {
 	changeVersion := client.storage.ChangeVersion
 	if len(changeVersion) == 0 {
 		l.PrintWarning("Change version not found. Making fresh sync...")
-		return client.RefetchSync()
+		return client.RefetchSync(ctx)
 	}
 
 	l.PrintInfo("syncing from version " + changeVersion + "... ")
-	err := client.updateSync()
+	err := client.updateSync(ctx)
 	if err != nil {
 		l.PrintError(err)
 		l.PrintWarning("\nFalling back to fresh sync... ")
-		return client.RefetchSync()
+		return client.RefetchSync(ctx)
 	}
 
 	return nil
 }
 
 // initial sync to load (or reload) all notes
-func (client *Client) RefetchSync() error {
+func (client *Client) RefetchSync(ctx context.Context) error {
 	noteEntities := []s.EntitySummary[NoteResponse]{}
 	maxParallelNotes := 30
 
@@ -45,10 +46,10 @@ func (client *Client) RefetchSync() error {
 			l.PrintInfo("\nFetching batch... ")
 		}
 
-		if err := client.simp.WriteIndexMessage(0, true, mark, "", maxParallelNotes); err != nil {
+		if err := client.simp.WriteIndexMessage(ctx, 0, true, mark, "", maxParallelNotes); err != nil {
 			return err
 		}
-		message, err := client.simp.ReadMessage()
+		message, err := client.simp.ReadMessage(ctx)
 		if err != nil {
 			return err
 		}
@@ -87,7 +88,7 @@ func (client *Client) RefetchSync() error {
 	return client.storage.writeChanges()
 }
 
-func (client *Client) updateSync() error {
+func (client *Client) updateSync(ctx context.Context) error {
 	// force exit if local changes may conflict
 	diffs := client.GetLocalDiffs()
 	l.PrintPlain("\n")
@@ -112,10 +113,10 @@ func (client *Client) updateSync() error {
 	}
 
 	changeVersion := client.storage.ChangeVersion
-	if err := client.simp.WriteChangeVersionMessage(0, changeVersion); err != nil {
+	if err := client.simp.WriteChangeVersionMessage(ctx, 0, changeVersion); err != nil {
 		return err
 	}
-	message, err := client.simp.ReadMessage()
+	message, err := client.simp.ReadMessage(ctx)
 	if err != nil {
 		return err
 	}

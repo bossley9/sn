@@ -1,14 +1,15 @@
 package simperium
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
 )
 
-func (client *Client) WriteChangeVersionMessage(channel int, changeVersion string) error {
+func (client *Client) WriteChangeVersionMessage(ctx context.Context, channel int, changeVersion string) error {
 	message := strconv.Itoa(channel) + ":cv:" + changeVersion
-	if err := writeMessage(client.connection, websocket.TextMessage, message); err != nil {
+	if err := writeMessage(ctx, client.connection, websocket.MessageText, message); err != nil {
 		return err
 	}
 	return nil

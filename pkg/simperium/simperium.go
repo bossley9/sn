@@ -1,6 +1,6 @@
 package simperium
 
-import "github.com/gorilla/websocket"
+import "nhooyr.io/websocket"
 
 type Client struct {
 	appID         string
