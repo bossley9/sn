@@ -30,13 +30,18 @@ type Note struct {
 }
 
 type NoteDiff struct {
-	Deleted          j.BoolJSONDiff    `json:"deleted,omitempty"`
-	Content          j.StringJSONDiff  `json:"content,omitempty"`
-	ModificationDate j.Int64JSONDiff   `json:"modificationDate,omitempty"`
-	CreationDate     j.Float32JSONDiff `json:"creationDate,omitempty"`
+	Tags             j.JSONDiff[[]string] `json:"tags,omitempty"`
+	Deleted          j.BoolJSONDiff       `json:"deleted,omitempty"`
+	ShareURL         j.StringJSONDiff     `json:"shareURL,omitempty"`
+	PublishURL       j.StringJSONDiff     `json:"publishURL,omitempty"`
+	Content          j.StringJSONDiff     `json:"content,omitempty"`
+	SystemTags       j.JSONDiff[[]string] `json:"systemTags,omitempty"`
+	ModificationDate j.Int64JSONDiff      `json:"modificationDate,omitempty"`
+	CreationDate     j.Float32JSONDiff    `json:"creationDate,omitempty"`
 }
 
 type DownloadNoteDiff s.Change[NoteDiff]
+type UploadNoteDiff s.UploadChange[NoteDiff]
 
 // given a note id and content string, returns a unique note name identifier
 func GetNoteName(noteID NoteID, content string) string {

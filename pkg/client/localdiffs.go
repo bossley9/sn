@@ -2,13 +2,14 @@ package client
 
 import (
 	"os"
+	"time"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
-func (client *Client) GetLocalDiffs() map[NoteID]j.StringJSONDiff {
-	diffs := make(map[NoteID]j.StringJSONDiff, 0)
+func (client *Client) GetLocalDiffs() map[NoteID]UploadNoteDiff {
+	diffs := make(map[NoteID]UploadNoteDiff, 0)
 	notes := client.storage.Notes
 
 	if len(notes) == 0 {
@@ -29,14 +30,23 @@ func (client *Client) GetLocalDiffs() map[NoteID]j.StringJSONDiff {
 			continue
 		}
 
-		diff := j.GetDiff(string(s1), string(s2))
-		if len(diff.Value) == 0 {
-			continue // no diff found
+		contentDiff := j.GetDiff(string(s1), string(s2))
+		if len(contentDiff.Value) == 0 {
+			continue
 		}
 
 		l.PrintInfo("\nLocal diff found for " + note.Name + ".")
 
-		diffs[noteID] = diff
+		diffs[noteID] = UploadNoteDiff{
+			Operation: j.OP_MODIFY,
+			Values: NoteDiff{
+				Content: contentDiff,
+				ModificationDate: j.Int64JSONDiff{
+					Operation: j.OP_REPLACE,
+					Value:     time.Now().Unix(),
+				},
+			},
+		}
 	}
 
 	if len(diffs) > 0 {

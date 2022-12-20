@@ -105,7 +105,7 @@ func (client *Client) updateSync(ctx context.Context) error {
 				continue
 			}
 
-			diff.PrettyPrint(note.Name, content)
+			diff.Values.Content.PrettyPrint(note.Name, content)
 		}
 		l.PrintWarning("Local diffs found. Please upload changes before syncing.\n")
 		l.PrintPlain("\n")
