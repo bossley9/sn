@@ -6,7 +6,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
-func (client *Client) ConnectToSocket(ctx context.Context) error {
+func (client *Client[DT]) ConnectToSocket(ctx context.Context) error {
 	dialOpts := websocket.DialOptions{
 		CompressionMode: websocket.CompressionContextTakeover,
 	}
@@ -23,7 +23,7 @@ func (client *Client) ConnectToSocket(ctx context.Context) error {
 	return nil
 }
 
-func (client *Client) DisconnectSocket() error {
+func (client *Client[DT]) DisconnectSocket() error {
 	err := client.connection.Close(websocket.StatusNormalClosure, "")
 	if err != nil {
 		return err

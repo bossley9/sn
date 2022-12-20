@@ -7,7 +7,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
-func (client *Client) WriteChangeVersionMessage(ctx context.Context, channel int, changeVersion string) error {
+func (client *Client[DT]) WriteChangeVersionMessage(ctx context.Context, channel int, changeVersion string) error {
 	message := strconv.Itoa(channel) + ":cv:" + changeVersion
 	if err := writeMessage(ctx, client.connection, websocket.MessageText, message); err != nil {
 		return err

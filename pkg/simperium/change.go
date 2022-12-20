@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"strconv"
-	"time"
 
 	"github.com/google/uuid"
 	"nhooyr.io/websocket"
-
-	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 )
 
-type Change[T any] struct {
+type Change[T interface{}] struct {
 	ClientID      string    `json:"clientid"`
 	ChangeVersion string    `json:"cv"`
 	EndVersion    int       `json:"ev"`
@@ -25,36 +22,22 @@ type Change[T any] struct {
 	Error         int       `json:"error,omitempty"`
 }
 
-type UploadChange[T any] struct {
-	SourceVersion int    `json:"sv"`
-	EntityID      string `json:"id"`
-	Operation     string `json:"o"`
-	Values        T      `json:"v"`
-	ChangeID      string `json:"ccid"`
+type UploadChange[T interface{}] struct {
+	SourceVersion int       `json:"sv"`
+	EntityID      string    `json:"id"`
+	Operation     string    `json:"o"`
+	Values        T         `json:"v"`
+	ChangeID      string    `json:"ccid"`
+	Data          *struct{} `json:"d,omitempty"`
 }
 
-type UploadDiff struct {
-	Content          j.StringJSONDiff `json:"content"`
-	ModificationDate j.Int64JSONDiff  `json:"modificationDate"`
-}
-
-func (client *Client) WriteChangeMessage(ctx context.Context, channel int, changeVersion string, entityVersion int, entityID string, operation string, textDiff string) (string, error) {
+func (client *Client[DT]) WriteChangeMessage(ctx context.Context, channel int, changeVersion string, entityVersion int, entityID string, operation string, diff DT) (string, error) {
 	ccid := uuid.New().String()
-	contentDiff := UploadDiff{
-		Content: j.StringJSONDiff{
-			Operation: "d",
-			Value:     textDiff,
-		},
-		ModificationDate: j.Int64JSONDiff{
-			Operation: "r",
-			Value:     time.Now().Unix(),
-		},
-	}
-	change := UploadChange[UploadDiff]{
+	change := UploadChange[DT]{
 		SourceVersion: entityVersion,
 		EntityID:      entityID,
 		Operation:     operation,
-		Values:        contentDiff,
+		Values:        diff,
 		ChangeID:      ccid,
 	}
 

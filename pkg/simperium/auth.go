@@ -12,7 +12,7 @@ type AuthorizeResponse struct {
 }
 
 // https://simperium.com/docs/reference/http/#auth
-func (client *Client) Authorize(username string, password string) (string, error) {
+func (client *Client[DT]) Authorize(username string, password string) (string, error) {
 	url := "https://auth.simperium.com/1/" + client.appID + "/authorize/"
 
 	params := map[string]any{

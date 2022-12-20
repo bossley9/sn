@@ -11,14 +11,14 @@ import (
 )
 
 type NoteResponse struct {
-	Tags           []string `json:"tags"`
-	Deleted        bool     `json:"deleted"`
-	ShareURL       string   `json:"shareURL"`
-	PublishURL     string   `json:"publishURL"`
-	Content        string   `json:"content"`
-	SystemTags     []string `json:"systemTags"`
-	LastEditedDate float32  `json:"modificationDate"`
-	CreationDate   float32  `json:"creationDate"`
+	Tags             []string `json:"tags"`
+	Deleted          bool     `json:"deleted"`
+	ShareURL         string   `json:"shareURL"`
+	PublishURL       string   `json:"publishURL"`
+	Content          string   `json:"content"`
+	SystemTags       []string `json:"systemTags"`
+	ModificationDate float32  `json:"modificationDate"`
+	CreationDate     float32  `json:"creationDate"`
 }
 
 type NoteID string
@@ -29,11 +29,14 @@ type Note struct {
 	Name    string `json:"n"`
 }
 
-type NoteDiff s.Change[struct {
-	Content      j.StringJSONDiff  `json:"content"`
-	Deleted      j.BoolJSONDiff    `json:"deleted"`
-	CreationDate j.Float32JSONDiff `json:"creationDate"`
-}]
+type NoteDiff struct {
+	Deleted          j.BoolJSONDiff    `json:"deleted,omitempty"`
+	Content          j.StringJSONDiff  `json:"content,omitempty"`
+	ModificationDate j.Int64JSONDiff   `json:"modificationDate,omitempty"`
+	CreationDate     j.Float32JSONDiff `json:"creationDate,omitempty"`
+}
+
+type DownloadNoteDiff s.Change[NoteDiff]
 
 // given a note id and content string, returns a unique note name identifier
 func GetNoteName(noteID NoteID, content string) string {

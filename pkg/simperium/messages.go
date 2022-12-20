@@ -28,7 +28,7 @@ func readMessage(ctx context.Context, conn *websocket.Conn) (websocket.MessageTy
 	return mtype, message, nil
 }
 
-func (client *Client) ReadMessage(ctx context.Context) (string, error) {
+func (client *Client[DT]) ReadMessage(ctx context.Context) (string, error) {
 	_, message, err := readMessage(ctx, client.connection)
 	if err != nil {
 		return "", err

@@ -18,7 +18,7 @@ type InitMessage struct {
 	Version    string `json:"version"`
 }
 
-func (client *Client) WriteInitMessage(ctx context.Context, channel int, token string, bucketName string) error {
+func (client *Client[DT]) WriteInitMessage(ctx context.Context, channel int, token string, bucketName string) error {
 	messageJson := InitMessage{
 		ClientID:   client.clientID,
 		API:        client.apiVersion,

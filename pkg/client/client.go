@@ -19,7 +19,7 @@ import (
 type Client struct {
 	projectDir string
 	versionDir string
-	simp       *s.Client
+	simp       *s.Client[NoteDiff]
 	connection *websocket.Conn
 	storage    *localStorage
 }
@@ -52,7 +52,7 @@ func NewClient() (*Client, error) {
 	}
 
 	// creating simperium client
-	c.simp = s.NewClient(APP_ID, API_KEY, "1.1", "node", "node-simperium", "0.0.1")
+	c.simp = s.NewClient[NoteDiff](APP_ID, API_KEY, "1.1", "node", "node-simperium", "0.0.1")
 
 	return &c, nil
 }

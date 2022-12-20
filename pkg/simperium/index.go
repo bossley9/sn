@@ -19,7 +19,7 @@ type EntitySummary[T any] struct {
 	Data    T      `json:"d,omitempty"`
 }
 
-func (client *Client) WriteIndexMessage(ctx context.Context, channel int, returnData bool, offset string, mark string, limit int) error {
+func (client *Client[DT]) WriteIndexMessage(ctx context.Context, channel int, returnData bool, offset string, mark string, limit int) error {
 	message := strconv.Itoa(channel) + ":i:"
 
 	if returnData {
