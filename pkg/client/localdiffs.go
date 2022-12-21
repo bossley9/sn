@@ -41,9 +41,9 @@ func (client *Client) GetLocalDiffs() map[NoteID]UploadNoteDiff {
 			Operation: j.OP_MODIFY,
 			Values: NoteDiff{
 				Content: contentDiff,
-				ModificationDate: j.Int64JSONDiff{
+				ModificationDate: j.Float32JSONDiff{
 					Operation: j.OP_REPLACE,
-					Value:     time.Now().Unix(),
+					Value:     float32(time.Now().Unix()),
 				},
 			},
 		}

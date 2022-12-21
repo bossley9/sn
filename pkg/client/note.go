@@ -36,7 +36,7 @@ type NoteDiff struct {
 	PublishURL       j.StringJSONDiff     `json:"publishURL,omitempty"`
 	Content          j.StringJSONDiff     `json:"content,omitempty"`
 	SystemTags       j.JSONDiff[[]string] `json:"systemTags,omitempty"`
-	ModificationDate j.Int64JSONDiff      `json:"modificationDate,omitempty"`
+	ModificationDate j.Float32JSONDiff    `json:"modificationDate,omitempty"`
 	CreationDate     j.Float32JSONDiff    `json:"creationDate,omitempty"`
 }
 
