@@ -40,8 +40,7 @@ type NoteDiff struct {
 	CreationDate     j.Float32JSONDiff    `json:"creationDate,omitempty"`
 }
 
-type DownloadNoteDiff s.Change[NoteDiff]
-type UploadNoteDiff s.UploadChange[NoteDiff]
+type NoteChange s.Change[NoteDiff]
 
 // given a note id and content string, returns a unique note name identifier
 func GetNoteName(noteID NoteID, content string) string {

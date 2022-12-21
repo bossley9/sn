@@ -9,9 +9,9 @@ import (
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
-func parseNoteChangeMessage(message string) ([]DownloadNoteDiff, error) {
+func parseNoteChangeMessage(message string) ([]NoteChange, error) {
 	response := message[4:]
-	var changes []DownloadNoteDiff
+	var changes []NoteChange
 	if err := json.Unmarshal([]byte(response), &changes); err != nil {
 		return nil, err
 	}
@@ -19,7 +19,7 @@ func parseNoteChangeMessage(message string) ([]DownloadNoteDiff, error) {
 }
 
 // given any change, applies that change to the specified note
-func (client *Client) applyChange(change *DownloadNoteDiff) {
+func (client *Client) applyChange(change *NoteChange) {
 	noteID := change.EntityID
 
 	if change.Values.CreationDate.Operation == j.OP_INSERT {
@@ -52,7 +52,7 @@ func (client *Client) applyChange(change *DownloadNoteDiff) {
 }
 
 // given an update change, applies that change to the specified note
-func (client *Client) applyUpdateChange(change *DownloadNoteDiff) error {
+func (client *Client) applyUpdateChange(change *NoteChange) error {
 	noteID := NoteID(change.EntityID)
 
 	content, err := client.readNote(noteID)
@@ -76,7 +76,7 @@ func (client *Client) applyUpdateChange(change *DownloadNoteDiff) error {
 }
 
 // given a creation change, applies that change to the specified note
-func (client *Client) applyCreationChange(change *DownloadNoteDiff) error {
+func (client *Client) applyCreationChange(change *NoteChange) error {
 	noteID := NoteID(change.EntityID)
 	content := change.Values.Content.Value
 	note := Note{
@@ -87,7 +87,7 @@ func (client *Client) applyCreationChange(change *DownloadNoteDiff) error {
 }
 
 // given a deletion change, deletes the specified note
-func (client *Client) applyDeletionChange(change *DownloadNoteDiff) error {
+func (client *Client) applyDeletionChange(change *NoteChange) error {
 	noteID := NoteID(change.EntityID)
 	note, ok := client.storage.Notes[noteID]
 	if !ok {

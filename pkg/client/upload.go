@@ -6,12 +6,11 @@ import (
 	"strconv"
 
 	f "git.sr.ht/~bossley9/sn/pkg/fileio"
-	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
 // upload and sync local diffs with server
-func (client *Client) Upload(ctx context.Context, diffs map[NoteID]UploadNoteDiff) error {
+func (client *Client) Upload(ctx context.Context, diffs map[NoteID]NoteChange) error {
 	for noteID, diff := range diffs {
 		note, ok := client.storage.Notes[noteID]
 		if !ok {
@@ -20,7 +19,7 @@ func (client *Client) Upload(ctx context.Context, diffs map[NoteID]UploadNoteDif
 		}
 
 		changeVersion := client.storage.ChangeVersion
-		ccid, err := client.simp.WriteChangeMessage(ctx, 0, changeVersion, note.Version, string(noteID), j.OP_MODIFY, diff.Values)
+		ccid, err := client.simp.WriteChangeMessage(ctx, 0, changeVersion, note.Version, string(noteID), diff.Operation, diff.Values)
 		if err != nil {
 			l.PrintError(err)
 			l.PrintWarning("\nUnable to upload changes to " + note.Name + ". Continuing...\n")
