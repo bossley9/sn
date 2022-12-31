@@ -107,8 +107,8 @@ func (client *Client) OpenBucket(bucketName string, ctx context.Context) error {
 			errChan <- err
 		}
 
-		// need to read two messages for some reason -
-		// this isn't in the Simperium documentation
+		// NOTE: This isn't in the Simperium documentation
+		// the server sends two messages on initial auth
 		if _, err := client.simp.ReadMessage(timedContext); err != nil {
 			errChan <- err
 		}

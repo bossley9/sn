@@ -26,7 +26,31 @@ func (client *Client) GetLocalDiffs() []NoteChange {
 		}
 		s2, err := os.ReadFile(filename)
 		if err != nil {
-			l.PrintWarning("unable to read file " + filename + " for versioning. Skipping...\n")
+			l.PrintInfo("\n" + note.Name + " was deleted.")
+
+			// NOTE: This isn't in the Simperium documentation
+			// deleting notes requires two diffs: one for moving the
+			// note to trash and a second for deleting the note
+			diffs = append(diffs, NoteChange{
+				EntityID:  string(noteID),
+				Operation: j.OP_MODIFY,
+				Values: NoteDiff{
+					Deleted: j.BoolJSONDiff{
+						Operation: j.OP_REPLACE,
+						Value:     true,
+					},
+					ModificationDate: j.Float32JSONDiff{
+						Operation: j.OP_REPLACE,
+						Value:     float32(time.Now().Unix()),
+					},
+				},
+			})
+
+			diffs = append(diffs, NoteChange{
+				EntityID:  string(noteID),
+				Operation: j.OP_DELETE,
+			})
+
 			continue
 		}
 

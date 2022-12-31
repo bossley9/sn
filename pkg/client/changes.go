@@ -96,13 +96,10 @@ func (client *Client) applyDeletionChange(change *NoteChange) error {
 
 	// remove file
 	filename := client.getFileName(note.Name)
-	if err := os.Remove(filename); err != nil {
-		return err
-	}
 	vFilename := client.getVersionFileName(note.Name)
-	if err := os.Remove(vFilename); err != nil {
-		return err
-	}
+	// silently ignore errors
+	os.Remove(filename)
+	os.Remove(vFilename)
 
 	// remove from cache
 	delete(client.storage.Notes, noteID)
