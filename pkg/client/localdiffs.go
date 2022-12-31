@@ -8,8 +8,8 @@ import (
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 )
 
-func (client *Client) GetLocalDiffs() map[NoteID]NoteChange {
-	diffs := make(map[NoteID]NoteChange, 0)
+func (client *Client) GetLocalDiffs() []NoteChange {
+	diffs := []NoteChange{}
 	notes := client.storage.Notes
 
 	if len(notes) == 0 {
@@ -37,7 +37,8 @@ func (client *Client) GetLocalDiffs() map[NoteID]NoteChange {
 
 		l.PrintInfo("\nLocal diff found for " + note.Name + ".")
 
-		diffs[noteID] = NoteChange{
+		diffs = append(diffs, NoteChange{
+			EntityID:  string(noteID),
 			Operation: j.OP_MODIFY,
 			Values: NoteDiff{
 				Content: contentDiff,
@@ -46,7 +47,7 @@ func (client *Client) GetLocalDiffs() map[NoteID]NoteChange {
 					Value:     float32(time.Now().Unix()),
 				},
 			},
-		}
+		})
 	}
 
 	if len(diffs) > 0 {

@@ -10,8 +10,9 @@ import (
 )
 
 // upload and sync local diffs with server
-func (client *Client) Upload(ctx context.Context, diffs map[NoteID]NoteChange) error {
-	for noteID, diff := range diffs {
+func (client *Client) Upload(ctx context.Context, diffs []NoteChange) error {
+	for _, diff := range diffs {
+		noteID := NoteID(diff.EntityID)
 		note, ok := client.storage.Notes[noteID]
 		if !ok {
 			l.PrintWarning("\nUnable to find note with id " + noteID + " in cache. Continuing...\n")

@@ -93,7 +93,8 @@ func (client *Client) updateSync(ctx context.Context) error {
 	diffs := client.GetLocalDiffs()
 	l.PrintPlain("\n")
 	if len(diffs) > 0 {
-		for noteID, diff := range diffs {
+		for _, diff := range diffs {
+			noteID := NoteID(diff.EntityID)
 			note, ok := client.storage.Notes[noteID]
 			if !ok {
 				l.PrintWarning("Unable to read local file with id " + noteID + ". Continuing...\n")
