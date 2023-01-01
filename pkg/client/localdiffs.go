@@ -2,7 +2,10 @@ package client
 
 import (
 	"os"
+	"strings"
 	"time"
+
+	"github.com/google/uuid"
 
 	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
@@ -14,6 +17,21 @@ func (client *Client) GetLocalDiffs() []NoteChange {
 
 	if len(notes) == 0 {
 		return diffs
+	}
+
+	filenames := map[string]string{}
+
+	dirEntries, err := os.ReadDir(client.projectDir)
+	if err != nil {
+		l.PrintWarning("unable to read directory " + client.projectDir + ". Continuing...\n")
+	} else {
+		for _, entry := range dirEntries {
+			if entry.IsDir() {
+				continue
+			}
+			noteName := strings.TrimSuffix(entry.Name(), ".md")
+			filenames[client.getFileName(noteName)] = noteName
+		}
 	}
 
 	for noteID, note := range notes {
@@ -54,6 +72,8 @@ func (client *Client) GetLocalDiffs() []NoteChange {
 			continue
 		}
 
+		delete(filenames, filename)
+
 		contentDiff := j.GetDiff(string(s1), string(s2))
 		if len(contentDiff.Value) == 0 {
 			continue
@@ -69,6 +89,71 @@ func (client *Client) GetLocalDiffs() []NoteChange {
 				ModificationDate: j.Float32JSONDiff{
 					Operation: j.OP_REPLACE,
 					Value:     float32(time.Now().Unix()),
+				},
+			},
+		})
+	}
+
+	for filename, noteName := range filenames {
+		raw, err := os.ReadFile(filename)
+		if err != nil {
+			l.PrintWarning("unable to read file " + filename + ". Skipping...\n")
+			continue
+		}
+
+		l.PrintInfo("\n" + noteName + " was created.")
+
+		noteID := uuid.New().String()
+		// ensure id uniqueness
+		_, keyExists := client.storage.Notes[NoteID(noteID)]
+		for keyExists {
+			noteID = uuid.New().String()
+			_, keyExists = client.storage.Notes[NoteID(noteID)]
+		}
+
+		note := Note{
+			Name:    noteName,
+			Version: 0,
+		}
+		client.storage.Notes[NoteID(noteID)] = note
+
+		date := float32(time.Now().Unix())
+
+		diffs = append(diffs, NoteChange{
+			EntityID:  noteID,
+			Operation: j.OP_MODIFY,
+			Values: NoteDiff{
+				CreationDate: j.Float32JSONDiff{
+					Operation: j.OP_INSERT,
+					Value:     date,
+				},
+				ModificationDate: j.Float32JSONDiff{
+					Operation: j.OP_INSERT,
+					Value:     date,
+				},
+				Content: j.StringJSONDiff{
+					Operation: j.OP_INSERT,
+					Value:     string(raw),
+				},
+				Tags: j.JSONDiff[[]string]{
+					Operation: j.OP_INSERT,
+					Value:     []string{},
+				},
+				SystemTags: j.JSONDiff[[]string]{
+					Operation: j.OP_INSERT,
+					Value:     []string{"markdown"},
+				},
+				Deleted: j.BoolJSONDiff{
+					Operation: j.OP_INSERT,
+					Value:     false,
+				},
+				ShareURL: j.StringJSONDiff{
+					Operation: j.OP_INSERT,
+					Value:     "",
+				},
+				PublishURL: j.StringJSONDiff{
+					Operation: j.OP_INSERT,
+					Value:     "",
 				},
 			},
 		})

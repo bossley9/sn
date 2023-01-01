@@ -43,6 +43,8 @@ func (client *Client) Upload(ctx context.Context, diffs []NoteChange) error {
 			// https://simperium.com/docs/websocket/#change-c
 			var errorMessage string
 			switch change.Error {
+			case 400:
+				errorMessage = "invalid id or invalid schema - change request did not conform to required fields"
 			case 404:
 				errorMessage = "object key or key version not found"
 			case 440:
@@ -59,6 +61,13 @@ func (client *Client) Upload(ctx context.Context, diffs []NoteChange) error {
 
 		if diff.Operation == j.OP_DELETE {
 			if err := client.applyDeletionChange(&change); err != nil {
+				l.PrintWarning(err)
+				l.PrintWarning("Continuing...\n")
+				continue
+			}
+
+		} else if diff.Values.CreationDate.Operation == j.OP_INSERT {
+			if err := client.applyCreationChange(&change); err != nil {
 				l.PrintWarning(err)
 				l.PrintWarning("Continuing...\n")
 				continue

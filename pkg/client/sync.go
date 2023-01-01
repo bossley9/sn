@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 
+	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
 	l "git.sr.ht/~bossley9/sn/pkg/logger"
 	s "git.sr.ht/~bossley9/sn/pkg/simperium"
 )
@@ -73,7 +74,7 @@ func (client *Client) RefetchSync(ctx context.Context) error {
 
 		note := Note{
 			Version: noteResponse.Version,
-			Name:    GetNoteName(noteID, content),
+			Name:    client.GetNoteName(noteID, content),
 		}
 
 		if err := client.writeNote(noteID, &note, noteResponse.Data.Content); err != nil {
@@ -94,6 +95,9 @@ func (client *Client) updateSync(ctx context.Context) error {
 	l.PrintPlain("\n")
 	if len(diffs) > 0 {
 		for _, diff := range diffs {
+			if diff.Values.CreationDate.Operation == j.OP_INSERT {
+				continue
+			}
 			noteID := NoteID(diff.EntityID)
 			note, ok := client.storage.Notes[noteID]
 			if !ok {

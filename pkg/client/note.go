@@ -43,8 +43,14 @@ type NoteDiff struct {
 type NoteChange s.Change[NoteDiff]
 
 // given a note id and content string, returns a unique note name identifier
-func GetNoteName(noteID NoteID, content string) string {
-	return url.GenerateID(content) + "-" + string(noteID)
+// if one does not already exist in storage
+func (client *Client) GetNoteName(noteID NoteID, content string) string {
+	note, ok := client.storage.Notes[noteID]
+	if ok {
+		return note.Name
+	} else {
+		return url.GenerateID(content) + "-" + string(noteID)
+	}
 }
 
 // given a note name, returns an absolute path filename

@@ -66,7 +66,7 @@ func (client *Client) applyUpdateChange(change *NoteChange) error {
 	l.PrintInfo("writing changes... ")
 	note := Note{
 		Version: change.EndVersion,
-		Name:    GetNoteName(noteID, modifiedContent),
+		Name:    client.GetNoteName(noteID, modifiedContent),
 	}
 	if err := client.writeNote(noteID, &note, modifiedContent); err != nil {
 		return err
@@ -81,7 +81,7 @@ func (client *Client) applyCreationChange(change *NoteChange) error {
 	content := change.Values.Content.Value
 	note := Note{
 		Version: change.EndVersion,
-		Name:    GetNoteName(noteID, content),
+		Name:    client.GetNoteName(noteID, content),
 	}
 	return client.writeNote(noteID, &note, content)
 }
