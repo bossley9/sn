@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"syscall"
 	"time"
 
@@ -57,12 +58,7 @@ func NewClient() (*Client, error) {
 	return &c, nil
 }
 
-// retrieve user authentication token
-func (client *Client) Authenticate() error {
-	if len(client.storage.AuthToken) > 0 {
-		return nil
-	}
-
+func fetchCredentials() (string, string, error) {
 	l.PrintPlain("\n")
 	l.PrintInfo("Username: ")
 	var username string
@@ -71,12 +67,40 @@ func (client *Client) Authenticate() error {
 	l.PrintInfo("Password (will not echo): ")
 	password, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	l.PrintPlain("\n")
+	return username, string(password), nil
+}
+
+// retrieve user authentication token
+func (client *Client) Authenticate() error {
+	if len(client.storage.AuthToken) > 0 {
+		return nil
+	}
+
+	var username, password string
+	var err error
+
+	bwCmd := exec.Command("bw")
+	if err := bwCmd.Run(); err != nil {
+		l.PrintInfo("Bitwarden detected.\n")
+		username, password, err = fetchBitwardenCredentials()
+		if err != nil {
+			username, password, err = fetchCredentials()
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		username, password, err = fetchCredentials()
+		if err != nil {
+			return err
+		}
+	}
 
 	l.PrintInfo("Fetching authorization... ")
-	token, err := client.simp.Authorize(username, string(password))
+	token, err := client.simp.Authorize(username, password)
 	if err != nil {
 		return err
 	}
