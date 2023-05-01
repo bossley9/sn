@@ -3,7 +3,7 @@ package simperium
 import (
 	"context"
 
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
+	l "github.com/bossley9/sn/pkg/logger"
 
 	"nhooyr.io/websocket"
 )

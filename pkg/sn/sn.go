@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	c "git.sr.ht/~bossley9/sn/pkg/client"
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
+	c "github.com/bossley9/sn/pkg/client"
+	l "github.com/bossley9/sn/pkg/logger"
 )
 
 func Run(arg string, ctx context.Context) {

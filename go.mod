@@ -1,9 +1,9 @@
-module git.sr.ht/~bossley9/sn
+module github.com/bossley9/sn
 
 go 1.18
 
 require (
-	git.sr.ht/~bossley9/gem v1.1.0
+	github.com/bossley9/gem v1.4.2
 	github.com/google/uuid v1.3.0
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
 	nhooyr.io/websocket v1.8.7

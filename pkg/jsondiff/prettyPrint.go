@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
+	l "github.com/bossley9/sn/pkg/logger"
 )
 
 func (jsondiff *StringJSONDiff) PrettyPrint(source string, content string) {

@@ -12,9 +12,9 @@ import (
 	"golang.org/x/term"
 	"nhooyr.io/websocket"
 
-	f "git.sr.ht/~bossley9/sn/pkg/fileio"
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
-	s "git.sr.ht/~bossley9/sn/pkg/simperium"
+	f "github.com/bossley9/sn/pkg/fileio"
+	l "github.com/bossley9/sn/pkg/logger"
+	s "github.com/bossley9/sn/pkg/simperium"
 )
 
 type Client struct {

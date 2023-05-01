@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
+	j "github.com/bossley9/sn/pkg/jsondiff"
+	l "github.com/bossley9/sn/pkg/logger"
 )
 
 func (client *Client) GetLocalDiffs() []NoteChange {

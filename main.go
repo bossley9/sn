@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	sn "git.sr.ht/~bossley9/sn/pkg/sn"
+	sn "github.com/bossley9/sn/pkg/sn"
 )
 
 func main() {

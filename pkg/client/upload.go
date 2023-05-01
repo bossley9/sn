@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	f "git.sr.ht/~bossley9/sn/pkg/fileio"
-	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
+	f "github.com/bossley9/sn/pkg/fileio"
+	j "github.com/bossley9/sn/pkg/jsondiff"
+	l "github.com/bossley9/sn/pkg/logger"
 )
 
 // upload and sync local diffs with server

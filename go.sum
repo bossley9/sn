@@ -1,5 +1,5 @@
-git.sr.ht/~bossley9/gem v1.1.0 h1:YmhNri+KF8Rlt8FYux4ZEawmQmEAgo0ojqGzWbPmQtg=
-git.sr.ht/~bossley9/gem v1.1.0/go.mod h1:46eQETjOcMPgXs79pzzT15erGca17A7W0hCPas94Jq8=
+github.com/bossley9/gem v1.4.2 h1:pxMZB38UF+xEaXmEMRC8wsdytb9oYsC11BBsVh+1GuU=
+github.com/bossley9/gem v1.4.2/go.mod h1:jGLo5kBMJ5Qu4z0hnYC1LI5DI76/qU0x/HvTgbJi8RU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE=

@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/term"
 
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
+	l "github.com/bossley9/sn/pkg/logger"
 )
 
 func fetchBitwardenCredentials() (string, string, error) {

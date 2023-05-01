@@ -3,7 +3,7 @@ package client
 import (
 	"os"
 
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
+	l "github.com/bossley9/sn/pkg/logger"
 )
 
 // clear and remove all data

@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"nhooyr.io/websocket"
 
-	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
+	j "github.com/bossley9/sn/pkg/jsondiff"
 )
 
 type Change[T interface{}] struct {

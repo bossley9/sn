@@ -4,10 +4,10 @@ import (
 	"errors"
 	"os"
 
-	"git.sr.ht/~bossley9/gem/pkg/url"
-	f "git.sr.ht/~bossley9/sn/pkg/fileio"
-	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
-	s "git.sr.ht/~bossley9/sn/pkg/simperium"
+	"github.com/bossley9/gem/pkg/url"
+	f "github.com/bossley9/sn/pkg/fileio"
+	j "github.com/bossley9/sn/pkg/jsondiff"
+	s "github.com/bossley9/sn/pkg/simperium"
 )
 
 type NoteResponse struct {

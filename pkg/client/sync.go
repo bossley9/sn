@@ -6,9 +6,9 @@ import (
 	"errors"
 	"os"
 
-	j "git.sr.ht/~bossley9/sn/pkg/jsondiff"
-	l "git.sr.ht/~bossley9/sn/pkg/logger"
-	s "git.sr.ht/~bossley9/sn/pkg/simperium"
+	j "github.com/bossley9/sn/pkg/jsondiff"
+	l "github.com/bossley9/sn/pkg/logger"
+	s "github.com/bossley9/sn/pkg/simperium"
 )
 
 // sync client notes

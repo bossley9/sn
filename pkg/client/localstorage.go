@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	f "git.sr.ht/~bossley9/sn/pkg/fileio"
+	f "github.com/bossley9/sn/pkg/fileio"
 )
 
 type localStorage struct {
