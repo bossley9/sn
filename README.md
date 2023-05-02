@@ -49,7 +49,7 @@ make
 $ make install
 ```
 
-If you run NixOS you can use [this derivation from my dotfiles for reference](https://git.sr.ht/~bossley9/dotfiles/tree/1acf270192c09160b8a3c4a8f18b1007ce181f38/item/user/derivations/sn.nix).
+If you run NixOS you can use [this derivation from my dotfiles for reference](https://github.com/bossley9/dotfiles/blob/7b7c1d19ba1e1f4cd5fa62a55bc7c553abc1d17c/user/packages/sn.nix).
 
 ## Usage
 
