@@ -1,3 +1,6 @@
+> [!Warning]
+> Active development for this project has migrated over to [git.sr.ht/~bossley9/sn2](https://git.sr.ht/~bossley9/sn2), a more robust async implementation.
+
 # sn
 
 A [Simplenote](https://simplenote.com) syncing CLI client written in Go
